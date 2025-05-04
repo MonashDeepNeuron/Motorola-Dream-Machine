@@ -1,2 +1,4 @@
 *.edf
 .venv
+__pycache__
+*.pyc
