@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Literal
+from typing import List, Literal, Optional
 from uuid import UUID
 from pydantic import BaseModel, Field, field_validator, ValidationInfo
 
@@ -14,6 +14,7 @@ class EEGBatch(BaseModel):
     data: List[List[float]] = Field(
         ..., description="[batch_size x num_channels] of EEG readings in mV" #TODO: confirm
     )
+    classification_labels: Optional[List[str]] = Field(None, description = "Optional list of classfiication labels, one for each sample in the batch (e.g., 'moving_up', 'resting')")
 
     @field_validator("data")
     def validate_data_dimensions(cls, v, info: ValidationInfo):
@@ -23,6 +24,16 @@ class EEGBatch(BaseModel):
                 "Each row in data must have len equal to num of channels"
             )
         return v
+
+    @field_validator("classification_labels")
+    def validate_classification_labels(cls, v_labels, info: ValidationInfo):
+        if v_labels is not None:
+            data_samples = info.data.get("data") if getattr(info, "data", None) else None
+            if data_samples and len(v_labels) != len(data_samples):
+                raise ValueError(
+                    "Length of `classification_labels` must match the number of samples in `data` (i.e., len(data))"
+                )
+        return v_labels
 
 class EEGBandPower(BaseModel):
     device_id: str
