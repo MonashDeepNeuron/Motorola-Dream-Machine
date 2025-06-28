@@ -49,12 +49,12 @@ def main(
 ):
     global consumer_instance
     consumer_config = {
+
         'bootstrap_servers': bootstrap_servers,
         'group_id': group_id,
         'auto_offset_reset': 'earliest',
         'enable_auto_commit': True,
         'value_deserializer': lambda v: v.decode('utf-8', errors='ignore'),
-        'consumer_timeout_ms': 5000,  # Increased timeout to 5 seconds
         'heartbeat_interval_ms': 1000,  # More frequent heartbeats
         'session_timeout_ms': 10000,    # Default is 10s, ensure it's > heartbeat
     }

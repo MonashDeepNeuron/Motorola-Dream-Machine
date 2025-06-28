@@ -1,5 +1,5 @@
-*.edf
-.venv
+venv/
 __pycache__
 *.pyc
 *edf.event
+
