@@ -1,212 +1,189 @@
-# EEG Data Processing Pipeline with Kafka
+# EEG Data Pipeline for Brain-Computer Interfaces
 
-This project provides a robust, lightweight, end-to-end Kafka-based pipeline for ingesting, validating, processing, and relaying EEG data from EDF files. It handles raw EEG signals and can also compute and stream windowed band power information.
+This project provides a robust, real-time data relay pipeline for EEG signals, designed to serve as the data backbone for a brain-computer interface (BCI) controlling a robotic arm. It uses Apache Kafka to reliably stream neural data from a source computer (connected to an EEG headset) to a destination computer (running a machine learning model).
 
-## Core Features
+## Table of Contents
 
-- **EDF Ingestion**: Reads EDF and EDF+ files, including associated `.event` files for annotations (via MNE-Python).
-- **Producer (`producer.producer`)**:
-  - Parses and displays detailed EDF header information.
-  - Processes EDF annotations (e.g., 'T0', 'T1', 'T2') to generate per-sample classification labels, interpreting task-specific event types based on EDF filename conventions (run number).
-  - Publishes raw EEG data (in Volts) as `EEGBatch` messages, including per-sample classification labels, to a Kafka topic (default: `raw-eeg`).
-  - Optionally computes Power Spectral Density (PSD, in $\mu V^2/Hz$) for standard frequency bands (Delta, Theta, Alpha, Beta, Gamma) using a sliding window approach. Publishes these as `WindowBandPower` messages (one per channel, per band, per window) to a separate Kafka topic (default: `eeg-bandpower`).
-  - Saves local analysis reports after processing an EDF file:
-    - `[edf_basename]_annotation_info.txt`: Human-readable summary of annotations, event interpretations, and timings.
-    - `[edf_basename]_eeg_analysis_results.json`: JSON with file information, annotation details, event-locked band power statistics (mean power in $\mu V^2$), and overall average band PSD (if bandpower emission was enabled).
-- **Consumer (`consumer.consumer`)**:
-  - Subscribes to either the `raw-eeg` or `eeg-bandpower` topic.
-  - Validates incoming JSON messages against Pydantic schemas (`EEGBatch`, `WindowBandPower`).
-  - For `EEGBatch` messages: Prints a summary of the received batch.
-  - For `WindowBandPower` messages: Aggregates per-channel power values to calculate an average power across all channels for each window and band.
-  - If consuming `eeg-bandpower` (with flags set), saves on exit (Ctrl+C):
-    - `consumed_window_band_power_averages.json`: Window-by-window average PSD per band.
-    - `consumed_overall_band_averages.json`: Overall average PSD per band.
-    - `consumed_average_band_power.png`: Bar plot of overall average band power.
-    - `consumed_window_band_power_over_time.png`: Line plot of band power over time.
-- **Data Integrity**: Uses Pydantic for schema definition and validation of Kafka messages.
-- **Modular Analysis**: Core signal processing logic (header parsing, band power, event statistics) is in the `analysis` module.
+1.  [Core Concepts](#1-core-concepts)
+2.  [The Data Schemas](#2-the-data-schemas-our-data-contract)
+3.  [Two-Machine Setup Guide](#3-two-machine-setup-guide)
+    - [On the Kafka Host Machine](#on-the-kafka-host-your-laptop)
+    - [On the Producer Machine](#on-the-producer-machine-your-friends-laptop)
+4.  [Running the Pipeline](#4-running-the-pipeline)
+    - [Producer Command](#producer-command)
+    - [Consumer Command](#consumer-command)
+5.  [Expected Outputs & Saved Artifacts](#5-expected-outputs--saved-artifacts)
+    - [Producer Outputs](#producer-outputs)
+    - [Consumer Outputs](#consumer-outputs)
 
 ---
 
-## Prerequisites & Setup
+## 1. Core Concepts
 
-### 1. System Requirements
+This pipeline is built on the principle of **decoupling** using a producer-consumer architecture.
 
-- Python 3.8+
-- Docker and Docker Compose
+- **Apache Kafka:** Acts as the central nervous system of the pipeline. It is a distributed, persistent log that allows different components to communicate without direct knowledge of each other. This provides a resilient buffer, handles speed mismatches, and allows for data replayability.
 
-### 2. Install Python Dependencies
+- **Producer (`producer/producer.py`):** This application's job is to read data from a source (e.g., an EDF file or a live headset stream), process it, and serialize it into structured JSON messages that are published to Kafka.
 
-```bash
-pip install kafka-python mne pydantic numpy scipy matplotlib
-```
-
-### 3. Start Kafka Infrastructure (Docker)
-
-Navigate to the `config/` directory and run:
-
-```bash
-cd config
-docker-compose up -d
-```
-
-This starts Zookeeper (port `2181`), Kafka (port `9092`), and Schema Registry (port `8081`).
-Verify with `docker ps`.
-
-### 4. Create Kafka Topics (First Time Only)
-
-```bash
-# Topic for raw EEG data
-docker exec kafka kafka-topics --bootstrap-server localhost:9092 \
-  --create --topic raw-eeg --partitions 3 --replication-factor 1
-
-# Topic for band power data
-docker exec kafka kafka-topics --bootstrap-server localhost:9092 \
-  --create --topic eeg-bandpower --partitions 3 --replication-factor 1
-
-docker exec kafka kafka-topics --bootstrap-server localhost:9092 --list
-```
+- **Consumer (`consumer/consumer.py`):** This is a reference application that shows how any downstream service (like your ML model) would connect to Kafka, subscribe to a data stream, and deserialize the messages to use them.
 
 ---
 
-## Running the Pipeline
+## 2. The Data Schemas: Our Data Contract
 
-Commands should be run from the project's root directory.
+To ensure data integrity, all messages are validated against schemas defined in `schemas/eeg_schemas.py` using Pydantic. Your ML model will consume one of these two message types.
 
-### 1. Producer (`producer.producer`)
+### a. `EEGBatch` (The Raw Signal)
 
-**Key Arguments:**
+- **Topic:** `raw-eeg`
+- **Content:** A batch of raw, unprocessed EEG sensor readings (in Volts). This is the high-fidelity digital recording of the brainwaves.
+- **Use Case:** Ideal for training deep learning models (CNNs, LSTMs) that learn directly from time-series data or for archiving the original session.
 
-- `--edf-file <PATH>`: **(Required)** Path to EDF.
-- `--bootstrap-servers <HOST:PORT>`: Kafka brokers (default: `localhost:9092`).
-- `--topic <NAME>`: Topic for `EEGBatch` (default: `raw-eeg`).
-- `--batch-size <SIZE>`: Samples per `EEGBatch` (default: `256`).
-- `--emit-bandpower`: Flag to enable `WindowBandPower` messages.
-- `--bandpower-topic <NAME>`: Topic for `WindowBandPower` (default: `eeg-bandpower`).
-- `--window-size <SEC>`: Window for PSD (default: `4.0`).
-- `--step-size <SEC>`: Step for PSD windows (default: `2.0`).
+### b. `WindowBandPower` (The Pre-Processed Features)
 
-**Example A: Raw EEG Only**
+- **Topic:** `eeg-bandpower`
+- **Content:** The calculated **power** within standard neurological frequency bands (Delta, Theta, Alpha, etc.). This is computed on the fly by analyzing a sliding time window of the raw signal.
+- **Use Case:** Perfect for ML models that expect frequency-based features, which are often more stable and less noisy. Also great for real-time state monitoring.
+
+---
+
+## 3. Two-Machine Setup Guide
+
+This guide explains how to get data flowing from a "Producer" laptop to a "Kafka Host" laptop.
+
+### On the Kafka Host (Your Laptop)
+
+This machine runs the central Kafka message broker.
+
+**Step 1: Find Your Network IP Address**
+Run this command to find the IP address other devices on your local network will use to connect.
 
 ```bash
-python -m eeg_pipeline.producer.producer \
-  --edf-file path/to/your/data.edf \
-  --topic raw-eeg
+ifconfig | grep 'inet ' | grep -v 127.0.0.1
 ```
 
-- **Outputs**: Console logs; `[edf_basename]_annotation_info.txt`, `[edf_basename]_eeg_analysis_results.json`.
+You will see an IP like `192.168.0.220`. This is your Kafka host IP.
 
-**Example B: Raw EEG + Band Power**
+**Step 2: Configure and Start Kafka**
+Tell the Kafka Docker container to advertise itself using this public IP.
+
+1.  Edit the `config/docker-compose.yml` file and set the `KAFKA_ADVERTISED_LISTENERS`:
+
+    ```yaml
+    # ... inside the "kafka" service ...
+    environment:
+      # ... other env vars
+      # This is the important line to change:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.0.220:9092 # <-- USE YOUR IP HERE
+    ```
+
+2.  From the `config/` directory, restart the services:
+    ```bash
+    cd config
+    docker compose down && docker compose up -d
+    ```
+
+**Step 3: Create the Kafka Topics**
+Use the public IP to create the topics that will hold the data.
+
+```bash
+# Still in the config directory
+docker exec kafka kafka-topics --bootstrap-server 192.168.0.220:9092 --create --if-not-exists --topic raw-eeg
+docker exec kafka kafka-topics --bootstrap-server 192.168.0.220:9092 --create --if-not-exists --topic eeg-bandpower
+```
+
+The Kafka host is now ready and listening for connections.
+
+### On the Producer Machine (Your Friend's Laptop)
+
+This machine will send the EEG data to your Kafka host.
+
+**Step 1: Set Up the Project**
+
+```bash
+git clone <repository-url>
+cd eeg-pipeline
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+**Step 2: Run the Producer**
+Execute the producer script from the project root directory, pointing it to the Kafka Host's IP.
 
 ```bash
 python -m eeg_pipeline.producer.producer \
-  --edf-file path/to/your/data.edf \
+  --edf-file /path/to/your/data.edf \
+  --bootstrap-servers 192.168.0.220:9092 \
   --emit-bandpower
 ```
 
-- **Outputs**: Console logs; `[edf_basename]_annotation_info.txt`, `[edf_basename]_eeg_analysis_results.json` (now including producer's PSD averages).
+### Verification: Listen for Data
+
+To prove it's working, run the consumer on **either laptop**. It will connect to the Kafka host and print the messages as they arrive.
+
+```bash
+# In a new terminal, with the venv activated
+python -m eeg_pipeline.consumer.consumer \
+  --bootstrap-servers <KAFKA_HOST_IP>:9092 \
+  --topic raw-eeg
+```
+
+You should see `[RawEEG]` messages printed to the console. The connection is successful. Your ML model can now use this same logic to subscribe and receive data.
 
 ---
 
-### 2. Consumer (`consumer.consumer`)
+## 4. Running the Pipeline
 
-**Key Arguments:**
+Commands should be run from the project's root directory after activating the virtual environment (`source venv/bin/activate`).
 
-- `--bootstrap-servers <HOST:PORT>`: Kafka brokers (default: `localhost:9092`).
-- `--topic <NAME>`: **(Required)** Topic to consume (e.g., `raw-eeg`, `eeg-bandpower`).
-- `--group-id <ID>`: Consumer group ID (default: `eeg-consumer-group`).
-- `--write-json`: For `eeg-bandpower` topic, save aggregated JSON on exit.
-- `--write-png`: For `eeg-bandpower` topic, save plots on exit.
-- `--window-size <SEC>` / `--step-size <SEC>`: Used for metadata in consumer's JSON outputs if writing bandpower results.
+### Producer Command
 
-**Example C: Consuming Raw EEG**
-(Best to start consumer before/during producer activity for live view)
+This command reads an EDF file and streams its data to both Kafka topics.
 
 ```bash
-python -m eeg_pipeline.consumer.consumer \
-  --topic raw-eeg \
-  --group-id raw-data-viewer
+python -m eeg_pipeline.producer.producer \
+  --edf-file /path/to/S012R14.edf \
+  --bootstrap-servers <KAFKA_HOST_IP>:9092 \
+  --batch-size 256 \
+  --emit-bandpower
 ```
 
-- **Outputs**: Console logs of `[RawEEG]` batches. Stop with `Ctrl+C`.
+### Consumer Command
 
-**Example D: Consuming Band Power & Generating Reports**
-(Ensure producer ran with `--emit-bandpower`)
+This command connects to Kafka and listens for messages. It can be run on any machine with access to the Kafka host.
 
 ```bash
+# To listen for raw EEG data
 python -m eeg_pipeline.consumer.consumer \
+  --bootstrap-servers <KAFKA_HOST_IP>:9092 \
+  --topic raw-eeg
+
+# To listen for band power data and save reports
+python -m eeg_pipeline.consumer.consumer \
+  --bootstrap-servers <KAFKA_HOST_IP>:9092 \
   --topic eeg-bandpower \
-  --group-id bandpower-results-processor \
   --write-json \
   --write-png
 ```
 
-- **Outputs**: Console logs of aggregation. On `Ctrl+C`, saves `consumed_*.json` files and `consumed_*.png` plots.
-
 ---
 
-## Kafka Message Schemas
+## 5. Expected Outputs & Saved Artifacts
 
-Defined in `schemas/eeg_schemas.py` using Pydantic.
+### Producer Outputs
 
-### `EEGBatch` (Topic: `raw-eeg`)
+- **In the Console:** You will see a real-time log including the EDF header information, task interpretations, and progress updates as it sends messages to Kafka.
+- **Saved Files:** The producer saves two analysis reports in the **current working directory**:
+  1.  `<edf_filename>_annotation_info.txt`: A human-readable summary of events and their timings.
+  2.  `<edf_filename>_eeg_analysis_results.json`: A detailed JSON file with file metadata, event stats, and overall average band power.
 
-```json
-{
-  "device_id": "producer",
-  "session_id": "uuid-string",
-  "timestamp": "utc-datetime-string",
-  "seq_number": 0,
-  "sample_rate": 160.0,
-  "channels": ["FP1", ...],
-  "data": [ [-0.001, ...], ... ], // List of samples (Volts)
-  "classification_labels": ["T0", ...] // Optional
-}
-```
+### Consumer Outputs
 
-### `WindowBandPower` (Topic: `eeg-bandpower`)
-
-(One message per channel, per band, per window)
-
-```json
-{
-  "device_id": "producer",
-  "session_id": "uuid-string",
-  "window_index": 0,
-  "start_time_sec": 0.0,
-  "end_time_sec": 4.0,
-  "band": "delta",
-  "channel_labels": ["FP1"],
-  "power": [750.123] // PSD (μV²/Hz)
-}
-```
-
----
-
-## Output File Details
-
-### Producer Local Reports
-
-- **`[edf_basename]_annotation_info.txt`**: Details annotations, event interpretations, timings.
-- **`[edf_basename]_eeg_analysis_results.json`**:
-  - `file_info`: Metadata about the EDF file.
-  - `annotations_summary`: List of annotation objects.
-  - `event_band_statistics_uv_sq`: Mean power ($\mu V^2$) per band per event.
-  - `producer_overall_avg_band_psd_uv_sq_hz`: Average PSD ($\mu V^2/Hz$) if bandpower was emitted.
-
-### Consumer Local Reports (from `eeg-bandpower` topic)
-
-- **`consumed_window_band_power_averages.json`**: Window-by-window PSD, averaged across channels.
-- **`consumed_overall_band_averages.json`**: Overall average PSD per band.
-- **`consumed_average_band_power.png`**: Bar chart of overall average band power.
-- **`consumed_window_band_power_over_time.png`**: Line plot of band power over time.
-
----
-
-## Common Issues
-
-- **Kafka Connection**: Ensure Docker containers are running and `bootstrap-servers` is correct.
-- **EDF Read Errors**: Verify `--edf-file` path and file integrity.
-- **Missing Annotations**: Ensure `.edf.event` file is alongside the `.edf` file.
-- **Consumer: No Messages**: Confirm producer sent to the correct topic. Use a new `--group-id` to reset offsets if needed. Ensure consumer is running when messages are expected.
-- **Consumer: Output Files Not Created**: Use `--write-json` / `--write-png` flags for `eeg-bandpower` consumer.
+- **In the Console:** The consumer prints a connection status and then a live summary of each message it receives from the subscribed topic.
+- **Saved Files (Optional):** If run on the `eeg-bandpower` topic with the `--write-json` and/or `--write-png` flags, the consumer will save the following files in the **current working directory** upon exit (Ctrl+C):
+  1.  `consumed_window_band_power_averages.json`: A time-series of band power averaged across channels.
+  2.  `consumed_overall_band_averages.json`: The final average power for each frequency band.
+  3.  `consumed_window_band_power_over_time.png`: A line graph visualizing band power over time.
+  4.  `consumed_average_band_power.png`: A bar chart of the overall average band power.
