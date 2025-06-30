@@ -13,6 +13,14 @@ import numpy as np
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
 
+import sys
+
+# Ensure the repo root is on sys.path so eeg_pipeline can be imported
+current_file = os.path.abspath(__file__)
+project_root = os.path.abspath(os.path.join(current_file, "../.."))
+sys.path.insert(0, project_root)
+
+
 from eeg_pipeline.analysis.bands import compute_window_band_power, DefaultBands, WindowBandResult
 from eeg_pipeline.analysis.header import header_dump
 from eeg_pipeline.analysis.events import event_band_statistics
