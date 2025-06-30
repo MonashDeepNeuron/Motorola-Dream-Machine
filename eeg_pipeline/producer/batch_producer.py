@@ -59,7 +59,7 @@ def run_producer_for_file(edf_file, output_dir, producer_script_path,
         # Build the command
         cmd = [
             sys.executable, producer_script_path,
-            '--edf-file', edf_file,
+            '--edf-file', Path(edf_file).resolve(),
             '--bootstrap-servers', bootstrap_servers,
             '--batch-size', str(batch_size),
             '--window-size', str(window_size),
@@ -95,11 +95,11 @@ def run_producer_for_file(edf_file, output_dir, producer_script_path,
 
 def main():
     parser = argparse.ArgumentParser(description="Batch process EDF files to generate datasets")
-    parser.add_argument('--edf-directory', required=True, 
+    parser.add_argument('--edf-directory', default='producer/input',
                        help='Directory containing EDF files')
-    parser.add_argument('--output-directory', required=True,
+    parser.add_argument('--output-directory', default='producer/output',
                        help='Directory where generated files will be saved')
-    parser.add_argument('--producer-script', required=True,
+    parser.add_argument('--producer-script', default='producer/producer.py',
                        help='Path to your producer.py script')
     parser.add_argument('--bootstrap-servers', default='localhost:9092',
                        help='Kafka bootstrap servers (default: localhost:9092)')

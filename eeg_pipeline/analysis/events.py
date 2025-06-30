@@ -57,7 +57,7 @@ def event_band_statistics(
 
 
     result: Dict[str, Dict[str, float]] = {}
-    for event_name in event_id.keys(): # Iterate over original event_id to ensure all keys are present
+    for event_name in event_id.keys(): 
         result[event_name] = {}
         if event_name not in epochs.event_id or len(epochs[event_name]) == 0:
             # print(f"No epochs found for event: {event_name}. Setting powers to 0.")
