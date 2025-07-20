@@ -8,3 +8,8 @@
 {"timestamp": 1753003407.411403, "command": "home", "parameters": {}, "robot_state": {"position": [0.0, 0.0, 0.3], "velocity": [0.0, 0.0, 0.0], "is_moving": false, "safety_status": "safe"}}
 {"timestamp": 1753003409.4116855, "command": "emergency_stop", "parameters": {}, "robot_state": {"position": [0.0, 0.0, 0.3], "velocity": [0.0, 0.0, 0.0], "is_moving": false, "safety_status": "emergency_stop"}}
 {"timestamp": 1753003419.0014935, "command": "emergency_stop", "parameters": {}, "robot_state": {"position": [0.0, 0.0, 0.3], "velocity": [0.0, 0.0, 0.0], "is_moving": false, "safety_status": "emergency_stop"}}
+{"timestamp": 1753004973.7286508, "command": "move_x_positive", "parameters": {"confidence": 0.8, "original_prediction": 1}, "robot_state": {"position": [0.008, 0.0, 0.3], "velocity": [0.0, 0.0, 0.0], "is_moving": true, "safety_status": "safe"}}
+{"timestamp": 1753004975.7288795, "command": "stop", "parameters": {"confidence": 1.0, "original_prediction": 0}, "robot_state": {"position": [0.008, 0.0, 0.3], "velocity": [0.0, 0.0, 0.0], "is_moving": false, "safety_status": "safe"}}
+{"timestamp": 1753004977.7291508, "command": "move_y_positive", "parameters": {"confidence": 0.9, "original_prediction": 3}, "robot_state": {"position": [0.008, 0.009000000000000001, 0.3], "velocity": [0.0, 0.0, 0.0], "is_moving": true, "safety_status": "safe"}}
+{"timestamp": 1753004979.729342, "command": "home", "parameters": {}, "robot_state": {"position": [0.0, 0.0, 0.3], "velocity": [0.0, 0.0, 0.0], "is_moving": false, "safety_status": "safe"}}
+{"timestamp": 1753004981.7295442, "command": "emergency_stop", "parameters": {}, "robot_state": {"position": [0.0, 0.0, 0.3], "velocity": [0.0, 0.0, 0.0], "is_moving": false, "safety_status": "emergency_stop"}}
