@@ -28,21 +28,50 @@ This system processes neural signals in real-time to control a robot arm through
 
 ### **1. Installation**
 
+### **1. Installation**
+
 #### **Automated Setup (Recommended)**
+
+**Option A: Bash Script (Linux/macOS)**
 ```bash
 # Clone the repository
 git clone https://github.com/MonashDeepNeuron/Motorola-Dream-Machine.git
 cd Motorola-Dream-Machine
 
-# Run automated setup
-python scripts/setup.py
+# Run automated setup (creates venv + installs everything)
+./setup.sh
+
+# Activate environment
+source venv/bin/activate
+# or use: ./activate_env.sh
 
 # Quick test
-python scripts/quick_start.py --demo
+python3 scripts/quick_start.py --demo
+```
+
+**Option B: Python Script**
+```bash
+# Clone the repository
+git clone https://github.com/MonashDeepNeuron/Motorola-Dream-Machine.git
+cd Motorola-Dream-Machine
+
+# Create virtual environment (recommended)
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Run automated setup
+python3 scripts/setup.py
+
+# Quick test
+python3 scripts/quick_start.py --demo
 ```
 
 #### **Manual Installation**
 ```bash
+# Create virtual environment (recommended)
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
 # Install core dependencies
 pip install numpy scipy pyyaml pandas matplotlib scikit-learn
 
@@ -57,35 +86,41 @@ pip install git+https://github.com/Emotiv/cortex-python.git
 
 #### **Demo Mode (No Hardware Required)**
 ```bash
+# Activate virtual environment if created
+source venv/bin/activate  # Skip if not using venv
+
 # Run 60-second demo with mock data
-python scripts/quick_start.py --demo
+python3 scripts/quick_start.py --demo
 ```
 
 #### **Real-time System**
 ```bash
+# Activate virtual environment if created
+source venv/bin/activate  # Skip if not using venv
+
 # Start full real-time system
-python scripts/quick_start.py
+python3 scripts/quick_start.py
 
 # Run for specific duration
-python scripts/quick_start.py --duration 300  # 5 minutes
+python3 scripts/quick_start.py --duration 300  # 5 minutes
 
 # Run with custom config
-python scripts/quick_start.py --config-dir my_config
+python3 scripts/quick_start.py --config-dir my_config
 ```
 
 #### **Individual Components**
 ```bash
 # Test EEG processing
-python src/eeg/processor.py --duration 10
+python3 src/eeg/processor.py --duration 10
 
 # Test robot control
-python src/robot/controller.py --interactive
+python3 src/robot/controller.py --interactive
 
 # Test model inference
-python src/model/inference.py --iterations 100
+python3 src/model/inference.py --iterations 100
 
 # Test Emotiv streaming
-python src/eeg/emotiv_streamer.py --duration 30
+python3 src/eeg/emotiv_streamer.py --duration 30
 ```
 
 ### **3. Configuration Setup**
@@ -183,11 +218,14 @@ Motorola-Dream-Machine/
 
 ### **Data Collection**
 ```bash
+# Activate environment
+source venv/bin/activate
+
 # Collect EEG data with the system (coming soon)
-python src/realtime_system.py --mode collect --duration 300
+python3 src/realtime_system.py --mode collect --duration 300
 
 # Or use existing EDF files from eeg_files/
-python src/eeg/processor.py --input eeg_files/mindflux_test.md.edf
+python3 src/eeg/processor.py --input eeg_files/mindflux_test.md.edf
 ```
 
 ### **Training Process**
@@ -207,28 +245,31 @@ The system currently uses a pre-configured model architecture. Custom training f
 
 ### **Basic Operation**
 ```bash
+# Activate environment first (if using venv)
+source venv/bin/activate
+
 # 1. Quick demo (no hardware needed)
-python scripts/quick_start.py --demo
+python3 scripts/quick_start.py --demo
 
 # 2. Real-time with Emotiv headset
-python scripts/quick_start.py
+python3 scripts/quick_start.py
 
 # 3. Test individual components
-python src/eeg/emotiv_streamer.py --duration 30
-python src/robot/controller.py --interactive
+python3 src/eeg/emotiv_streamer.py --duration 30
+python3 src/robot/controller.py --interactive
 ```
 
 ### **Advanced Usage**
 ```bash
 # Custom configuration
-python scripts/quick_start.py --config-dir my_custom_config
+python3 scripts/quick_start.py --config-dir my_custom_config
 
 # Specific duration
-python scripts/quick_start.py --duration 300 --save-log
+python3 scripts/quick_start.py --duration 300 --save-log
 
 # Component testing
-python src/eeg/processor.py --channels 14 --duration 10
-python src/model/inference.py --iterations 100
+python3 src/eeg/processor.py --channels 14 --duration 10
+python3 src/model/inference.py --iterations 100
 ```
 
 ## ⚙️ **Configuration Guide**
@@ -378,6 +419,19 @@ The system uses a hybrid model combining:
 
 ### **Common Issues**
 
+#### **Q: "python: command not found"**
+**Linux/Ubuntu:**
+```bash
+# Option 1: Install python-is-python3
+sudo apt install python-is-python3
+
+# Option 2: Use python3 explicitly (recommended)
+python3 scripts/setup.py
+
+# Option 3: Use the bash setup script
+./setup.sh
+```
+
 #### **Q: "cortex" module not found**
 ```bash
 # Install Emotiv SDK
@@ -385,6 +439,24 @@ pip install git+https://github.com/Emotiv/cortex-python.git
 
 # Or run in simulation mode (no real headset needed)
 python scripts/quick_start.py --demo
+```
+
+#### **Q: Virtual environment issues**
+```bash
+# Create virtual environment
+python3 -m venv venv
+
+# Activate (Linux/macOS)
+source venv/bin/activate
+
+# Activate (Windows)
+venv\Scripts\activate
+
+# Deactivate
+deactivate
+
+# Check if venv is active (should show venv path)
+which python
 ```
 
 #### **Q: Permission denied for Emotiv headset**
@@ -437,16 +509,19 @@ python scripts/quick_start.py --test
 
 ### **Development Setup**
 ```bash
+# Activate environment
+source venv/bin/activate
+
 # Install development dependencies
 pip install -r requirements.txt
 
 # Test system components
-python scripts/quick_start.py --test
+python3 scripts/quick_start.py --test
 
 # Run individual component tests
-python src/eeg/processor.py --duration 5
-python src/robot/controller.py --duration 5
-python src/model/inference.py --iterations 10
+python3 src/eeg/processor.py --duration 5
+python3 src/robot/controller.py --duration 5
+python3 src/model/inference.py --iterations 10
 ```
 
 ### **Code Structure**
@@ -467,13 +542,16 @@ python src/model/inference.py --iterations 10
 
 ### **Running Tests**
 ```bash
+# Activate environment
+source venv/bin/activate
+
 # System-wide test
-python scripts/quick_start.py --test
+python3 scripts/quick_start.py --test
 
 # Individual component tests
-python src/utils/helpers.py  # Check dependencies
-python -c "import src.eeg.processor; print('EEG processor OK')"
-python -c "import src.robot.controller; print('Robot controller OK')"
+python3 src/utils/helpers.py  # Check dependencies
+python3 -c "import src.eeg.processor; print('EEG processor OK')"
+python3 -c "import src.robot.controller; print('Robot controller OK')"
 ```
 
 ## 📚 **Additional Resources**
