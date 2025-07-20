@@ -22,11 +22,23 @@ from datetime import datetime
 import json
 
 # Import system components
-from src.eeg.emotiv_streamer import EmotivStreamer
-from src.eeg.processor import RealTimeEEGProcessor
-from src.eeg.features import EEGFeatureExtractor
-from src.model.inference import EEGModelInference
-from src.robot.controller import RobotController
+try:
+    # Try relative imports first (when run as module)
+    from .eeg.emotiv_streamer import EmotivStreamer
+    from .eeg.processor import RealTimeEEGProcessor
+    from .eeg.features import EEGFeatureExtractor
+    from .model.inference import EEGModelInference
+    from .robot.controller import RobotController
+except ImportError:
+    # Fallback to absolute imports (when run as script)
+    import sys
+    import os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from src.eeg.emotiv_streamer import EmotivStreamer
+    from src.eeg.processor import RealTimeEEGProcessor
+    from src.eeg.features import EEGFeatureExtractor
+    from src.model.inference import EEGModelInference
+    from src.robot.controller import RobotController
 
 @dataclass
 class SystemStatus:

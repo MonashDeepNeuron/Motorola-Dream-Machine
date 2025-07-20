@@ -1,163 +1,23 @@
 # Robot Control Configuration
-
-# Robot Hardware Settings
-robot:
-  # Robot type and connection
-  type: "universal_robots"      # Robot type: universal_robots, simulation
-  model: "UR5"                  # Robot model: UR3, UR5, UR10
-  connection:
-    type: "simulation"          # Connection type: tcp, simulation, ros
-    host: "127.0.0.1"          # Robot IP address
-    port: 30002                 # Robot port
-    timeout: 5                  # Connection timeout (seconds)
-
-# Movement Parameters
 movement:
-  # Basic movement settings
-  scale: 0.05                   # Movement scale factor (meters)
-  max_velocity: 0.1             # Maximum velocity (m/s)
-  max_acceleration: 0.5         # Maximum acceleration (m/s²)
-  
-  # Movement axes
-  axes:
-    x: true                     # Enable X-axis movement
-    y: true                     # Enable Y-axis movement  
-    z: true                     # Enable Z-axis movement
-    rx: false                   # Enable X-axis rotation
-    ry: false                   # Enable Y-axis rotation
-    rz: false                   # Enable Z-axis rotation
-  
-  # Movement limits (meters)
-  limits:
-    x: [-0.5, 0.5]              # X-axis limits
-    y: [-0.5, 0.5]              # Y-axis limits
-    z: [0.0, 0.8]               # Z-axis limits (above table)
-    
-  # Safety zones
-  safety:
-    enabled: true               # Enable safety monitoring
-    emergency_stop: true        # Enable emergency stop
-    collision_detection: true   # Enable collision detection
-
-# Command Processing
-commands:
-  # Command generation
-  rate: 10                      # Commands per second
-  format: "json"                # Command format: json, xml, binary
-  
-  # Command mapping
-  mapping:
-    class_0: {dx: 0.0, dy: 0.0, dz: 0.0}     # Rest/Stop
-    class_1: {dx: -0.05, dy: 0.0, dz: 0.0}  # Move left
-    class_2: {dx: 0.05, dy: 0.0, dz: 0.0}   # Move right
-    class_3: {dx: 0.0, dy: 0.05, dz: 0.0}   # Move forward
-    class_4: {dx: 0.0, dy: -0.05, dz: 0.0}  # Move backward
-    
-  # Command smoothing
+  step_size: 0.01  # meters
+  speed: 0.1      # m/s
+  home_position: [0.0, 0.0, 0.3]
   smoothing:
-    enabled: true               # Enable command smoothing
-    method: "moving_average"    # Smoothing method
-    window_size: 5              # Smoothing window size
-    alpha: 0.3                  # Exponential smoothing factor
-    
-  # Command validation
-  validation:
-    enabled: true               # Enable command validation
-    range_check: true           # Check command ranges
-    safety_check: true          # Check safety constraints
+    enabled: true
+    factor: 0.7
 
-# Output Configuration
-output:
-  # File output
-  file:
-    enabled: true               # Enable file output
-    path: "data/robot_commands.jsonl"  # Output file path
-    format: "jsonl"             # File format: json, jsonl, csv
-    append_mode: true           # Append to existing file
-    
-  # Real-time output
-  realtime:
-    enabled: true               # Enable real-time output
-    buffer_size: 100            # Output buffer size
-    flush_interval: 0.1         # Buffer flush interval (seconds)
-    
-  # Network output (optional)
-  network:
-    enabled: false              # Enable network output
-    protocol: "tcp"             # Network protocol
-    host: "localhost"           # Target host
-    port: 8080                  # Target port
-
-# Simulation Settings
-simulation:
-  # Simulator configuration
-  enabled: true                 # Enable simulation mode
-  visualizer: "ursim"           # Simulator type: ursim, gazebo, rviz
-  
-  # Simulation parameters
-  physics:
-    gravity: [0, 0, -9.81]      # Gravity vector
-    timestep: 0.01              # Physics timestep (seconds)
-    damping: 0.1                # Joint damping
-    
-  # Visual settings
-  visualization:
-    enabled: true               # Enable 3D visualization
-    update_rate: 30             # Visualization update rate (Hz)
-    trail_length: 100           # End-effector trail length
-    
-# Safety and Monitoring
 safety:
-  # Safety limits
-  limits:
-    velocity_limit: 0.2         # Maximum velocity (m/s)
-    force_limit: 100            # Maximum force (N)
-    torque_limit: 50            # Maximum torque (Nm)
-    
-  # Emergency procedures
-  emergency:
-    stop_distance: 0.1          # Emergency stop distance (m)
-    stop_acceleration: 2.0      # Emergency stop acceleration (m/s²)
-    recovery_timeout: 10        # Recovery timeout (seconds)
-    
-  # Monitoring
-  monitoring:
-    enabled: true               # Enable safety monitoring
-    check_interval: 0.01        # Monitoring interval (seconds)
-    log_violations: true        # Log safety violations
+  position_limits:
+    - [-0.5, 0.5]  # X axis [min, max] in meters
+    - [-0.5, 0.5]  # Y axis [min, max] in meters
+    - [0.1, 0.8]   # Z axis [min, max] in meters
+  velocity_limits: [0.2, 0.2, 0.2]  # max velocity [x, y, z] m/s
+  max_acceleration: 1.0  # m/s²
 
-# Performance Optimization
-performance:
-  # Processing optimization
-  processing:
-    multithread: true           # Enable multithreading
-    thread_count: 2             # Number of processing threads
-    priority: "high"            # Process priority
-    
-  # Memory management
-  memory:
-    buffer_limit: 1000          # Maximum buffer size
-    cleanup_interval: 60        # Memory cleanup interval (seconds)
-    
-  # Communication optimization
-  communication:
-    compression: false          # Enable data compression
-    batch_size: 10              # Command batch size
-    acknowledge_mode: false     # Require command acknowledgments
+control:
+  confidence_threshold: 0.7
 
-# Logging and Debugging
-logging:
-  # Log settings
-  enabled: true                 # Enable robot logging
-  level: "INFO"                 # Log level
-  
-  # Log content
-  log_commands: true            # Log all commands
-  log_responses: true           # Log robot responses
-  log_errors: true              # Log error conditions
-  
-  # Debug features
-  debug:
-    verbose_output: false       # Verbose command output
-    timing_analysis: true       # Log timing information
-    command_echo: false         # Echo commands to console
+simulation:
+  enabled: true
+  output_file: "robot_commands.json"

@@ -1,124 +1,34 @@
-# EEG-to-Robot Control System Configuration
+# EEG Processing Pipeline Configuration
+eeg_processing:
+  sampling_rate: 256
+  window_length: 4.0
+  overlap: 0.5
+  filters:
+    lowpass: 40.0
+    highpass: 0.5
+    notch: 60.0
+  frequency_bands:
+    delta: [0.5, 4.0]
+    theta: [4.0, 8.0]
+    alpha: [8.0, 12.0]
+    beta: [12.0, 30.0]
+    gamma: [30.0, 40.0]
 
-# EEG Processing Parameters
-eeg:
-  sample_rate: 256              # Sampling frequency (Hz)
-  window_size: 4.0              # Analysis window size (seconds)
-  step_size: 2.0                # Window step size (seconds)
-  overlap: 0.5                  # Window overlap ratio
-  channels: 32                  # Number of EEG channels
-  
-  # Signal quality thresholds
-  quality:
-    min_contact_quality: 2      # Minimum electrode contact quality (1-4)
-    max_noise_level: 50         # Maximum acceptable noise level (μV)
-    impedance_threshold: 100    # Maximum impedance (kΩ)
-
-# Frequency Band Definitions
-frequency_bands:
-  delta: [0.5, 4]               # Deep sleep, unconscious processes
-  theta: [4, 8]                 # Drowsiness, meditation, memory
-  alpha: [8, 12]                # Relaxed awareness, idle state
-  beta: [12, 30]                # Active concentration, alertness
-  gamma: [30, 45]               # High-level cognitive processing
-
-# Machine Learning Model
 model:
-  architecture: "cnn_gcn_transformer"
-  n_classes: 5                  # Number of robot commands
-  sequence_length: 10           # Temporal sequence length
-  
-  # Model hyperparameters
-  cnn:
-    time_pool: 2                # CNN temporal pooling factor
-    dropout: 0.1                # CNN dropout rate
-    
-  gcn:
-    hidden_dims: [32, 32]       # GCN hidden layer dimensions
-    edge_dropout: 0.1           # Graph edge dropout rate
-    
-  transformer:
-    n_heads: 4                  # Number of attention heads
-    n_layers: 2                 # Number of transformer layers
-    ff_dim: 2048                # Feed-forward dimension
-    dropout: 0.1                # Transformer dropout rate
-    
-  classification:
-    hidden_dim: 128             # Classification head hidden dimension
-    dropout: 0.3                # Classification dropout rate
+  architecture:
+    n_channels: 14
+    n_classes: 7
+    sampling_rate: 256
+    cnn_filters: [32, 64, 128]
+    gcn_hidden: 128
+    transformer_dim: 256
+    transformer_heads: 8
+    transformer_layers: 4
+    dropout: 0.3
+  save_path: "models/eeg_model.pth"
+  scaler_path: "models/feature_scaler.pkl"
 
-# Training Parameters
-training:
-  batch_size: 32                # Training batch size
-  learning_rate: 0.001          # Initial learning rate
-  epochs: 100                   # Maximum training epochs
-  patience: 15                  # Early stopping patience
-  validation_split: 0.2         # Validation data ratio
-  
-  # Data augmentation
-  augmentation:
-    noise_std: 0.01             # Gaussian noise standard deviation
-    time_shift: 0.1             # Maximum time shift (seconds)
-    amplitude_scale: [0.9, 1.1] # Amplitude scaling range
-
-# Robot Control
-robot:
-  command_rate: 10              # Commands per second
-  movement_scale: 0.05          # Movement magnitude (meters)
-  axes: ["x", "y", "z"]         # Controlled movement axes
-  
-  # Movement limits
-  limits:
-    velocity_max: 0.1           # Maximum velocity (m/s)
-    acceleration_max: 0.5       # Maximum acceleration (m/s²)
-    
-  # Command smoothing
-  smoothing:
-    enabled: true               # Enable command smoothing
-    window_size: 5              # Smoothing window size
-    
-# Real-time Processing
-realtime:
-  buffer_size: 1024             # EEG data buffer size (samples)
-  processing_interval: 0.1      # Processing interval (seconds)
-  command_timeout: 1.0          # Command timeout (seconds)
-  
-  # Performance optimization
-  gpu_enabled: true             # Use GPU acceleration if available
-  multiprocessing: false        # Use multiprocessing (experimental)
-
-# Data Management
-data:
-  auto_save: true               # Automatically save session data
-  save_interval: 300            # Save interval (seconds)
-  max_file_size: 100            # Maximum file size (MB)
-  
-  # Data paths
-  paths:
-    eeg_files: "data/eeg_files"
-    processed: "data/processed"
-    models: "data/models"
-    logs: "logs"
-    robot_commands: "data/robot_commands.jsonl"
-
-# Logging Configuration
-logging:
-  level: "INFO"                 # Logging level (DEBUG, INFO, WARNING, ERROR)
-  console: true                 # Enable console logging
-  file: true                    # Enable file logging
-  
-  # Log file settings
-  file_settings:
-    max_size: 10                # Maximum log file size (MB)
-    backup_count: 5             # Number of backup files
-    
-# System Settings
-system:
-  random_seed: 42               # Random seed for reproducibility
-  num_workers: 4                # Number of worker processes
-  device: "auto"                # Device selection (auto, cpu, cuda)
-  
-  # Memory management
-  memory:
-    max_gpu_memory: 0.8         # Maximum GPU memory usage (fraction)
-    clear_cache: true           # Clear cache between runs
+inference:
+  confidence_threshold: 0.7
+  prediction_smoothing: true
+  smoothing_window: 5

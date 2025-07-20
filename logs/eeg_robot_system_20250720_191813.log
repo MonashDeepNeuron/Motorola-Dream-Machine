@@ -1,0 +1,38 @@
+2025-07-20 19:18:13,351 - __main__ - INFO - Real-time EEG-Robot system initialized
+2025-07-20 19:18:13,351 - __main__ - INFO - Starting real-time EEG-Robot system...
+2025-07-20 19:18:13,351 - __main__ - INFO - Initializing system components...
+2025-07-20 19:18:13,351 - __main__ - INFO - Initializing EEG streamer...
+2025-07-20 19:18:13,353 - src.eeg.emotiv_streamer - WARNING - Cortex SDK not available - using simulation mode
+2025-07-20 19:18:13,353 - __main__ - INFO - Initializing EEG processor...
+2025-07-20 19:18:13,360 - src.eeg.processor - INFO - Filters initialized: 0.5-40.0 Hz bandpass, 60.0 Hz notch
+2025-07-20 19:18:13,360 - src.eeg.processor - INFO - Initialized EEG processor: 1024 samples/window, 256 Hz
+2025-07-20 19:18:13,360 - __main__ - INFO - Initializing feature extractor...
+2025-07-20 19:18:13,363 - src.eeg.features - INFO - Initialized EEG feature extractor: 5 frequency bands
+2025-07-20 19:18:13,363 - __main__ - INFO - Initializing model inference...
+2025-07-20 19:18:13,383 - src.model.inference - INFO - EEG inference engine initialized on device: cpu
+2025-07-20 19:18:13,383 - src.model.inference - WARNING - Model architecture not available - using mock inference
+2025-07-20 19:18:13,383 - __main__ - INFO - Initializing robot controller...
+2025-07-20 19:18:13,385 - src.robot.controller - INFO - Robot controller initialized - Simulation mode: True
+2025-07-20 19:18:13,385 - __main__ - INFO - All components initialized successfully
+2025-07-20 19:18:13,385 - __main__ - INFO - Connecting to EEG headset...
+2025-07-20 19:18:13,385 - src.eeg.emotiv_streamer - WARNING - Using simulation mode - no real headset connection
+2025-07-20 19:18:13,385 - src.eeg.processor - INFO - Set 14 channels: ['AF3', 'F7', 'F3', 'FC5', 'T7', 'P7', 'O1', 'O2', 'P8', 'T8', 'FC6', 'F4', 'F8', 'AF4']
+2025-07-20 19:18:13,385 - __main__ - INFO - Starting robot controller...
+2025-07-20 19:18:13,385 - src.robot.controller - INFO - Robot control loop started
+2025-07-20 19:18:13,385 - src.robot.controller - INFO - Robot initialized at home position: [0.0, 0.0, 0.3]
+2025-07-20 19:18:13,385 - src.robot.controller - INFO - Robot controller started
+2025-07-20 19:18:13,386 - __main__ - INFO - Processing loop started
+2025-07-20 19:18:13,386 - __main__ - INFO - Starting EEG streaming...
+2025-07-20 19:18:13,386 - src.eeg.emotiv_streamer - INFO - Starting EEG simulation
+2025-07-20 19:18:13,386 - src.eeg.emotiv_streamer - INFO - Started EEG streaming
+2025-07-20 19:18:13,386 - __main__ - INFO - Real-time EEG-Robot system started successfully!
+2025-07-20 19:18:59,858 - src.robot.controller - INFO - Executing command: move_y_positive (confidence: 0.812)
+2025-07-20 19:19:13,746 - __main__ - INFO - Stopping real-time EEG-Robot system...
+2025-07-20 19:19:14,321 - src.eeg.emotiv_streamer - INFO - EEG simulation stopped
+2025-07-20 19:19:14,342 - src.eeg.emotiv_streamer - INFO - Stopped EEG streaming
+2025-07-20 19:19:14,362 - src.robot.controller - INFO - Executing command: emergency_stop (confidence: 1.000)
+2025-07-20 19:19:14,373 - src.robot.controller - WARNING - EMERGENCY STOP ACTIVATED
+2025-07-20 19:19:14,398 - src.robot.controller - INFO - Robot control loop stopped
+2025-07-20 19:19:14,419 - src.robot.controller - INFO - Robot controller stopped
+2025-07-20 19:19:19,434 - __main__ - INFO - System stopped
+2025-07-20 19:19:19,455 - __main__ - INFO - Session log saved to: logs/session_log_20250720_191919.json

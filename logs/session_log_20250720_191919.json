@@ -1,0 +1,107 @@
+{
+  "session_info": {
+    "start_time": 1753003093.3860004,
+    "end_time": 1753003159.4401698,
+    "duration": 66.05416989326477
+  },
+  "statistics": {
+    "windows_processed": 1,
+    "predictions_made": 1,
+    "commands_sent": 1
+  },
+  "final_status": {
+    "system": {
+      "running": false,
+      "uptime": 66.05417275428772,
+      "windows_processed": 1,
+      "predictions_made": 1,
+      "commands_sent": 1
+    },
+    "eeg_streamer": {
+      "connected": false,
+      "streaming": false,
+      "headset_id": null,
+      "session_id": null,
+      "buffer_size": 1086,
+      "sample_rate": 256,
+      "channels": [
+        "AF3",
+        "F7",
+        "F3",
+        "FC5",
+        "T7",
+        "P7",
+        "O1",
+        "O2",
+        "P8",
+        "T8",
+        "FC6",
+        "F4",
+        "F8",
+        "AF4"
+      ]
+    },
+    "eeg_processor": {
+      "channels": 14,
+      "channel_names": [
+        "AF3",
+        "F7",
+        "F3",
+        "FC5",
+        "T7",
+        "P7",
+        "O1",
+        "O2",
+        "P8",
+        "T8",
+        "FC6",
+        "F4",
+        "F8",
+        "AF4"
+      ],
+      "sampling_rate": 256,
+      "window_samples": 1024,
+      "buffer_size": 1086,
+      "processed_windows": 63,
+      "can_process": true,
+      "last_process_time": 1753003154.3127239,
+      "processing_rate": 12.286784691636946
+    },
+    "model_inference": {
+      "model_loaded": true,
+      "device": "cpu",
+      "inference_count": 0,
+      "average_inference_time": 0,
+      "total_inference_time": 0,
+      "confidence_threshold": 0.7,
+      "prediction_smoothing": true,
+      "smoothing_window": 5,
+      "history_length": 0
+    },
+    "robot_controller": {
+      "connected": false,
+      "simulation_mode": true,
+      "is_running": false,
+      "position": [
+        0.0,
+        0.00811718772063491,
+        0.3
+      ],
+      "velocity": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "is_moving": false,
+      "last_command": "emergency_stop",
+      "safety_status": "emergency_stop",
+      "command_queue_size": 0,
+      "emergency_stop_enabled": true
+    },
+    "performance": {
+      "avg_processing_time": 42.11023998260498,
+      "max_processing_time": 42.11023998260498,
+      "min_processing_time": 42.11023998260498
+    }
+  }
+}

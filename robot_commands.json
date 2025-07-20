@@ -1,0 +1,2 @@
+{"timestamp": 1753003139.8581076, "command": "move_y_positive", "parameters": {"confidence": 0.8117187720634911, "original_prediction": 3}, "robot_state": {"position": [0.0, 0.00811718772063491, 0.3], "velocity": [0.0, 0.0, 0.0], "is_moving": true, "safety_status": "safe"}}
+{"timestamp": 1753003154.3525834, "command": "emergency_stop", "parameters": {}, "robot_state": {"position": [0.0, 0.00811718772063491, 0.3], "velocity": [0.0, 0.0, 0.0], "is_moving": false, "safety_status": "emergency_stop"}}

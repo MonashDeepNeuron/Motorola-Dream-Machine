@@ -7,6 +7,7 @@ Common utility functions for the EEG-Robot control system.
 """
 
 import os
+import sys
 import json
 import yaml
 import numpy as np

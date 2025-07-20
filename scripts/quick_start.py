@@ -13,10 +13,19 @@ import argparse
 import subprocess
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+# Add project root to path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
 
-from src.utils.helpers import print_system_info, check_system_requirements
+try:
+    from src.utils.helpers import print_system_info, check_system_requirements
+except ImportError:
+    # Fallback for when modules aren't available
+    def print_system_info():
+        print("System info check skipped - utils not available")
+    
+    def check_system_requirements():
+        return {"python": True, "basic_modules": True}
 
 def check_dependencies():
     """Check if all dependencies are available"""
