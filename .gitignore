@@ -1,5 +1,109 @@
-# Virtual Environment
-ur_venv/
-venv/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
 env/
+venv/
 ENV/
+env.bak/
+venv.bak/
+ur_venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Data files
+*.edf
+*.csv
+*.hdf5
+*.h5
+*.pkl
+*.pickle
+
+# Model files
+*.pth
+*.pt
+*.onnx
+*.tflite
+models/*.pth
+models/*.pt
+!models/README.md
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# EEG data
+eeg_files/*.edf
+eeg_files/*.csv
+!eeg_files/README.md
+
+# Output data
+data/
+output/
+results/
+
+# Configuration overrides
+config/local_*.yaml
+config/secret_*.yaml
+
+# Emotiv SDK
+cortex/
+
+# Robot simulation outputs
+ursim_test_v1/*.jsonl
+!ursim_test_v1/example_output.jsonl
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/

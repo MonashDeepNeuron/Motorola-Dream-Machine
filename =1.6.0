@@ -1,2 +1,0 @@
-Requirement already satisfied: scipy in ./venv/lib/python3.12/site-packages (1.16.0)
-Requirement already satisfied: numpy<2.6,>=1.25.2 in ./venv/lib/python3.12/site-packages (from scipy) (2.3.1)

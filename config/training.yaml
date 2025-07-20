@@ -1,0 +1,56 @@
+# Model Training Configuration
+# ===========================
+
+# Data settings
+data:
+  input_features: 70        # EEG feature vector size
+  num_classes: 7           # Robot commands (6 movements + stop)
+  sequence_length: 10      # Temporal sequence length
+  
+# Model architecture
+model:
+  hidden_dim: 128          # Hidden layer dimension
+  num_heads: 8             # Transformer attention heads
+  num_layers: 4            # Transformer layers
+  dropout: 0.1             # Dropout rate
+  
+# Training parameters
+training:
+  batch_size: 32           # Batch size
+  learning_rate: 0.001     # Initial learning rate
+  weight_decay: 0.01       # L2 regularization
+  epochs: 100              # Maximum epochs
+  patience: 10             # Early stopping patience
+  
+# Loss function
+loss:
+  type: "focal"            # Focal loss for class imbalance
+  alpha: 1.0              # Focal loss alpha
+  gamma: 2.0              # Focal loss gamma
+  
+# Optimization
+optimizer:
+  type: "adamw"            # Optimizer type
+  lr_scheduler: "cosine"   # Learning rate scheduler
+  
+# Validation
+validation:
+  split_ratio: 0.2         # Validation split
+  cross_validation: 5      # K-fold cross validation
+  
+# Data augmentation
+augmentation:
+  noise_std: 0.05          # Gaussian noise standard deviation
+  time_shift: 0.1          # Temporal shift augmentation
+  amplitude_scale: 0.1     # Amplitude scaling
+  
+# Logging and checkpointing
+logging:
+  log_interval: 10         # Log every N batches
+  save_interval: 5         # Save model every N epochs
+  tensorboard: true        # Enable TensorBoard logging
+  
+# Hardware
+hardware:
+  device: "auto"           # auto, cpu, cuda
+  num_workers: 4           # DataLoader workers
