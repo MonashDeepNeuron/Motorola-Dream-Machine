@@ -88,12 +88,30 @@ python src/model/inference.py --iterations 100
 python src/eeg/emotiv_streamer.py --duration 30
 ```
 
-### **3. Quick Demo**
+### **3. Configuration Setup**
 
-```bash
-# Start with a simple demonstration
-./scripts/quick_start.sh
+#### **Emotiv Credentials (Required for Real Headset)**
+Edit `config/emotiv.yaml`:
+```yaml
+authentication:
+  client_id: "your_emotiv_client_id"
+  client_secret: "your_emotiv_client_secret"
+  username: "your_emotiv_username"
+  password: "your_emotiv_password"
 ```
+
+**Get Emotiv credentials:**
+1. Sign up at [Emotiv Developer Portal](https://www.emotiv.com/developer/)
+2. Create new application to get Client ID and Secret
+3. Update the config file with your credentials
+
+#### **System Configuration**
+The system uses three main config files in `config/`:
+- `pipeline.yaml` - EEG processing and model settings
+- `emotiv.yaml` - Headset connection and streaming
+- `robot.yaml` - Robot control and safety parameters
+
+All configs have sensible defaults and work out-of-the-box for most users.
 
 ## 📋 **System Requirements**
 
@@ -141,328 +159,328 @@ Motorola-Dream-Machine/
 │   │   └── features.py              # Feature extraction
 │   ├── 🤖 model/                    # Machine learning model
 │   │   ├── eeg_model.py             # Neural network architecture
-│   │   └── trainer.py               # Training pipeline
+│   │   └── inference.py             # Real-time inference
 │   ├── 🎛️ robot/                    # Robot control
 │   │   └── controller.py            # Robot command interface
 │   ├── 🔧 utils/                    # Utilities
-│   │   ├── config.py                # Configuration management
-│   │   └── logging.py               # Logging setup
-│   ├── demo.py                      # System demonstration
-│   └── main.py                      # Main pipeline script
-├── 📁 data/                         # Data storage
-│   ├── eeg_files/                   # Raw EEG recordings
-│   ├── processed/                   # Processed training data
-│   └── models/                      # Trained model weights
+│   │   └── helpers.py               # Helper functions
+│   └── realtime_system.py           # Main unified system
 ├── 📁 config/                       # Configuration files
 │   ├── pipeline.yaml                # Main configuration
 │   ├── emotiv.yaml                  # Emotiv-specific settings
 │   └── robot.yaml                   # Robot parameters
 ├── 📁 scripts/                      # Utility scripts
-│   ├── setup.sh                     # Environment setup
-│   ├── train.py                     # Model training
-│   ├── test_system.py               # System tests
-│   └── quick_start.sh               # Quick start guide
-├── 📁 notebooks/                    # Jupyter notebooks
-│   ├── data_exploration.ipynb       # Data analysis
-│   └── model_analysis.ipynb         # Model visualization
-├── 📁 docs/                         # Documentation
-│   ├── API.md                       # API documentation
-│   ├── TRAINING.md                  # Training guide
-│   └── TROUBLESHOOTING.md           # Common issues
+│   ├── setup.py                     # Automated installation
+│   └── quick_start.py               # Easy system launcher
+├── 📁 data/                         # Data storage (auto-created)
+├── 📁 logs/                         # System logs (auto-created)
+├── 📁 models/                       # Model storage (auto-created)
 ├── requirements.txt                 # Python dependencies
-├── setup.py                         # Package setup
-└── README.md                        # This file
+└── README.md                        # This comprehensive guide
 ```
 
 ## 🎓 **Training Your Own Model**
 
-### **1. Data Collection**
-
+### **Data Collection**
 ```bash
-# Collect EEG data with labels
-python src/main.py --mode collect --duration 300 --task motor_imagery
+# Collect EEG data with the system (coming soon)
+python src/realtime_system.py --mode collect --duration 300
 
-# Or use existing EDF files
-python scripts/prepare_data.py --edf-files data/eeg_files/*.edf
+# Or use existing EDF files from eeg_files/
+python src/eeg/processor.py --input eeg_files/mindflux_test.md.edf
 ```
 
-### **2. Data Preprocessing**
+### **Training Process**
+The system currently uses a pre-configured model architecture. Custom training features are in development.
 
+**Current Capabilities:**
+- Real-time inference with existing model
+- Feature extraction from any EEG data
+- Simulation mode for development
+
+**Coming Soon:**
+- Custom model training pipeline
+- Data labeling interface  
+- Transfer learning options
+
+## 🎮 **Usage Examples**
+
+### **Basic Operation**
 ```bash
-# Process raw EEG into training features
-python scripts/prepare_data.py \
-    --input data/eeg_files/ \
-    --output data/processed/ \
-    --window-size 4.0 \
-    --overlap 0.5
+# 1. Quick demo (no hardware needed)
+python scripts/quick_start.py --demo
+
+# 2. Real-time with Emotiv headset
+python scripts/quick_start.py
+
+# 3. Test individual components
+python src/eeg/emotiv_streamer.py --duration 30
+python src/robot/controller.py --interactive
 ```
 
-### **3. Model Training**
-
+### **Advanced Usage**
 ```bash
-# Train the neural network
-python scripts/train.py \
-    --data data/processed/ \
-    --epochs 100 \
-    --batch-size 32 \
-    --learning-rate 0.001
+# Custom configuration
+python scripts/quick_start.py --config-dir my_custom_config
+
+# Specific duration
+python scripts/quick_start.py --duration 300 --save-log
+
+# Component testing
+python src/eeg/processor.py --channels 14 --duration 10
+python src/model/inference.py --iterations 100
 ```
 
-### **4. Evaluation**
+## ⚙️ **Configuration Guide**
 
-```bash
-# Test model performance
-python scripts/evaluate.py \
-    --model data/models/best_model.pth \
-    --test-data data/processed/test/
-```
-
-## 🎮 **Usage Modes**
-
-### **Real-time Control**
-
-```bash
-# Live EEG streaming and robot control
-python src/main.py --mode realtime --headset emotiv --robot ur_sim
-```
-
-### **File Processing**
-
-```bash
-# Process recorded EEG files
-python src/main.py --mode inference --input data/eeg_files/session1.edf
-```
-
-### **Training Mode**
-
-```bash
-# Train new models
-python src/main.py --mode train --data data/processed/ --epochs 50
-```
-
-### **Demo Mode**
-
-```bash
-# Demonstration without hardware
-python src/demo.py --mode simulate --duration 60
-```
-
-## ⚙️ **Configuration**
+The system uses YAML configuration files in the `config/` directory:
 
 ### **Main Configuration** (`config/pipeline.yaml`)
-
 ```yaml
-# EEG Processing
-eeg:
-  sample_rate: 256          # Sampling frequency (Hz)
-  window_size: 4.0          # Analysis window (seconds)
-  overlap: 0.5              # Window overlap ratio
-  channels: 32              # Number of EEG channels
+# EEG Processing Settings
+eeg_processing:
+  sampling_rate: 256        # Hz - standard for most headsets
+  window_length: 4.0        # seconds - analysis window
+  overlap: 0.5              # 50% window overlap
   
-# Frequency Bands
-frequency_bands:
-  delta: [0.5, 4]           # Deep sleep, unconscious
-  theta: [4, 8]             # Drowsiness, meditation
-  alpha: [8, 12]            # Relaxed awareness
-  beta: [12, 30]            # Active concentration
-  gamma: [30, 45]           # High-level cognitive processing
+  # Frequency bands for analysis
+  frequency_bands:
+    delta: [0.5, 4.0]       # Deep sleep/unconscious
+    theta: [4.0, 8.0]       # Meditation/drowsiness  
+    alpha: [8.0, 12.0]      # Relaxed awareness
+    beta: [12.0, 30.0]      # Active concentration
+    gamma: [30.0, 40.0]     # High cognitive activity
 
-# Model Parameters
+# Model settings
 model:
-  architecture: "cnn_gcn_transformer"
-  n_classes: 5              # Number of robot commands
-  sequence_length: 10       # Temporal sequence length
-  
-# Robot Control
-robot:
-  command_rate: 10          # Commands per second
-  movement_scale: 0.05      # Movement magnitude
-  axes: ["x", "y", "z"]     # Controlled axes
+  architecture:
+    n_channels: 14          # Number of EEG channels
+    n_classes: 7            # Robot movement commands
+    dropout: 0.3            # Prevent overfitting
+  confidence_threshold: 0.7 # Minimum confidence for actions
 ```
 
 ### **Emotiv Configuration** (`config/emotiv.yaml`)
-
 ```yaml
-# Emotiv Headset Settings
-emotiv:
-  client_id: "your_client_id"
-  client_secret: "your_client_secret"
-  
-  # Headset preferences
-  headset:
-    model: "EPOC X"         # EPOC X, FLEX, Insight
-    connection: "bluetooth"  # bluetooth, usb
-    
-  # Streaming settings
-  stream:
-    eeg: true               # Enable EEG streaming
-    motion: false           # Disable motion data
-    contact_quality: true   # Monitor electrode contact
-    
-  # Data quality
-  quality:
-    min_contact_quality: 2  # Minimum electrode quality (1-4)
-    max_noise_level: 50     # Maximum noise threshold
+# Emotiv headset connection
+authentication:
+  client_id: "your_id"      # Get from Emotiv Developer Portal
+  client_secret: "secret"   # Get from Emotiv Developer Portal
+  username: "your_email"    # Your Emotiv account
+  password: "your_password" # Your Emotiv password
+
+headset:
+  model: "EPOC_X"          # EPOC_X, FLEX, or INSIGHT
+  channels:
+    eeg_channels: ["AF3", "F7", "F3", "FC5", "T7", "P7", "O1", 
+                   "O2", "P8", "T8", "FC6", "F4", "F8", "AF4"]
+
+streaming:
+  eeg_rate: 256            # Sampling rate in Hz
+  streams:
+    eeg: true              # Enable EEG data
+    motion: false          # Disable motion sensors
 ```
 
-## 🤖 **Robot Commands**
+### **Robot Configuration** (`config/robot.yaml`)
+```yaml
+# Robot movement settings
+movement:
+  step_size: 0.01          # Movement step in meters
+  speed: 0.1               # Movement speed m/s
+  home_position: [0.0, 0.0, 0.3]  # Starting position
 
-The system generates movement commands in JSON format:
+# Safety limits
+safety:
+  position_limits:         # [min, max] for each axis
+    - [-0.5, 0.5]         # X axis limits (meters)
+    - [-0.5, 0.5]         # Y axis limits (meters) 
+    - [0.1, 0.8]          # Z axis limits (meters)
+  max_acceleration: 1.0    # m/s² safety limit
 
+simulation:
+  enabled: true            # Use simulation by default
+  output_file: "robot_commands.json"  # Command log file
+```
+
+## 🤖 **Robot Command System**
+
+### **Movement Commands**
+The system translates EEG patterns into 7 different robot commands:
+
+| Command ID | Mental Pattern | Robot Action | Description |
+|-----------|---------------|--------------|-------------|
+| 0 | Rest/Baseline | Stop | No movement |
+| 1 | Left Hand Motor Imagery | Move Left (-X) | Move along negative X axis |
+| 2 | Right Hand Motor Imagery | Move Right (+X) | Move along positive X axis |
+| 3 | Forward Intent | Move Forward (+Y) | Move along positive Y axis |
+| 4 | Backward Intent | Move Backward (-Y) | Move along negative Y axis |
+| 5 | Up Intent | Move Up (+Z) | Move along positive Z axis |
+| 6 | Down Intent | Move Down (-Z) | Move along negative Z axis |
+
+### **Command Output Format**
+Commands are saved to `robot_commands.json` in this format:
 ```json
 {
-  "dx": 0.05,    // X-axis movement (meters)
-  "dy": 0.0,     // Y-axis movement (meters) 
-  "dz": 0.0,     // Z-axis movement (meters)
-  "drx": 0.0,    // X-axis rotation (radians)
-  "dry": 0.0,    // Y-axis rotation (radians)
-  "drz": 0.0     // Z-axis rotation (radians)
+  "timestamp": 1653123456.789,
+  "command": "move_x_positive",
+  "parameters": {
+    "confidence": 0.85,
+    "original_prediction": 1
+  },
+  "robot_state": {
+    "position": [0.05, 0.0, 0.3],
+    "velocity": [0.1, 0.0, 0.0],
+    "is_moving": true,
+    "safety_status": "safe"
+  }
 }
 ```
 
-### **Command Mapping**
+### **Safety Features**
+- **Position Limits**: Prevents robot from moving outside safe bounds
+- **Emergency Stop**: Immediate halt on safety violations
+- **Confidence Threshold**: Only high-confidence predictions trigger movement
+- **Smoothing**: Reduces jittery movements from noisy predictions
 
-| Mental State | Command | Robot Action |
-|-------------|---------|--------------|
-| Rest/Baseline | Class 0 | No movement |
-| Left Hand Imagery | Class 1 | Move left (-X) |
-| Right Hand Imagery | Class 2 | Move right (+X) |
-| Forward Imagery | Class 3 | Move forward (+Y) |
-| Backward Imagery | Class 4 | Move backward (-Y) |
+## 🔬 **Technical Architecture**
 
-## 🔬 **Model Architecture**
+### **System Pipeline**
+```
+EEG Headset → Signal Processing → Feature Extraction → ML Model → Robot Commands
+     ↓              ↓                    ↓              ↓            ↓
+  Raw EEG      Filter & Window      Time/Freq        Neural        Movement
+  256 Hz       4-second chunks      Features         Network       JSON Output
+```
 
-### **Neural Network Components**
+### **Neural Network Architecture**
+The system uses a hybrid model combining:
 
-1. **3D CNN Layers**
-   - Spatial-temporal feature extraction
-   - Depth-wise convolutions for efficiency
-   - Batch normalization and dropout
+1. **CNN Layers**: Extract spatial patterns from EEG channels
+2. **Graph Convolution**: Model relationships between brain regions  
+3. **Transformer**: Capture temporal dependencies
+4. **Classification**: Output 7 movement commands
 
-2. **Graph Convolutional Network (GCN)**
-   - Models electrode connectivity
-   - Captures spatial brain relationships
-   - Learnable adjacency matrix
-
-3. **Transformer Encoder**
-   - Temporal sequence modeling
-   - Multi-head self-attention
-   - Positional encoding for time awareness
-
-4. **Classification Head**
-   - Fully connected layers
-   - 5-class output for robot commands
-   - Softmax activation for probabilities
-
-### **Input/Output Specifications**
-
-- **Input**: `(batch_size, n_electrodes, n_bands, time_steps)`
-- **Example**: `(32, 32, 5, 10)` for 32 samples, 32 electrodes, 5 frequency bands, 10 time steps
-- **Output**: `(batch_size, n_classes)` probability distribution over commands
-
-## 📊 **Performance Metrics**
+**Model Specifications:**
+- **Input**: 14 EEG channels × 5 frequency bands × time windows
+- **Output**: 7-class probability distribution
+- **Latency**: <100ms from EEG input to robot command
+- **Accuracy**: Depends on user training and signal quality
 
 ### **Real-time Performance**
-- **Latency**: <100ms from EEG to robot command
-- **Throughput**: 10 commands/second
-- **Accuracy**: >85% classification accuracy (trained users)
+- **EEG Sampling**: 256 Hz continuous streaming
+- **Processing Windows**: 4 seconds with 50% overlap  
+- **Feature Extraction**: 50+ features per window
+- **Prediction Rate**: ~5 predictions per second
+- **Command Rate**: Variable based on confidence threshold
 
-### **Training Results**
-- **Training Time**: ~2 hours on GPU for 100 epochs
-- **Model Size**: ~15MB compressed
-- **Memory Usage**: ~500MB during inference
-
-## 🔧 **Troubleshooting**
+## 🔧 **Troubleshooting & FAQ**
 
 ### **Common Issues**
 
-**1. Emotiv Connection Problems**
+#### **Q: "cortex" module not found**
 ```bash
-# Check device connection
-python src/eeg/emotiv_streamer.py --test-connection
+# Install Emotiv SDK
+pip install git+https://github.com/Emotiv/cortex-python.git
 
-# Verify credentials
-python scripts/test_emotiv.py --check-auth
+# Or run in simulation mode (no real headset needed)
+python scripts/quick_start.py --demo
 ```
 
-**2. Model Loading Errors**
-```bash
-# Download pre-trained weights
-python scripts/download_models.py
+#### **Q: Permission denied for Emotiv headset**
+- **Linux**: Add user to dialout group: `sudo usermod -a -G dialout $USER`
+- **Windows**: Run as Administrator
+- **macOS**: Grant USB permissions in System Preferences
 
-# Verify model compatibility
-python scripts/test_model.py --model data/models/best_model.pth
+#### **Q: Model not found error**
+```bash
+# The system works without pre-trained models using random weights
+# This is normal for initial setup - you can train your own model
+python scripts/train_model.py  # Coming soon
 ```
 
-**3. Robot Communication Issues**
-```bash
-# Test robot connection
-python src/robot/controller.py --test
+#### **Q: Robot commands not working**
+- Check `robot_commands.json` file is being created
+- Verify robot configuration in `config/robot.yaml`
+- System runs in simulation mode by default (no physical robot needed)
 
-# Check command file output
-tail -f data/robot_commands.jsonl
-```
+#### **Q: Low EEG signal quality**
+- Ensure electrodes have good skin contact
+- Use conductive gel if available  
+- Check for electrical interference (WiFi, phones, etc.)
+- Try different headset positions
 
-### **Performance Optimization**
+### **Performance Tips**
 
 **For Better Accuracy:**
-- Ensure good electrode contact (contact quality > 2)
-- Minimize electrical interference
-- Train with consistent mental imagery
-- Use subject-specific model training
+- Train the system with your specific brain patterns
+- Use consistent mental imagery during operation
+- Minimize head movement during sessions
+- Ensure good electrode contact quality
 
 **For Lower Latency:**
-- Use GPU acceleration
-- Optimize buffer sizes
-- Reduce model complexity if needed
-- Enable real-time priority
+- Close unnecessary applications
+- Use wired headset connection when possible
+- Adjust buffer sizes in configuration
+- Enable GPU acceleration if available
 
-## 🧪 **Development**
+### **System Requirements Check**
+```bash
+# Check if your system meets requirements
+python src/utils/helpers.py
 
-### **Setting Up Development Environment**
+# Test individual components
+python scripts/quick_start.py --test
+```
 
+## 🧪 **Development & Contributing**
+
+### **Development Setup**
 ```bash
 # Install development dependencies
-pip install -r requirements-dev.txt
+pip install -r requirements.txt
 
-# Install pre-commit hooks
-pre-commit install
+# Test system components
+python scripts/quick_start.py --test
 
-# Run tests
-python -m pytest tests/
+# Run individual component tests
+python src/eeg/processor.py --duration 5
+python src/robot/controller.py --duration 5
+python src/model/inference.py --iterations 10
 ```
 
-### **Code Quality**
-
-```bash
-# Format code
-black src/ scripts/
-isort src/ scripts/
-
-# Lint code
-flake8 src/ scripts/
-pylint src/ scripts/
-
-# Type checking
-mypy src/
-```
+### **Code Structure**
+- **`src/eeg/`**: EEG processing and streaming
+- **`src/model/`**: Machine learning inference  
+- **`src/robot/`**: Robot control and safety
+- **`src/utils/`**: Helper functions
+- **`config/`**: YAML configuration files
+- **`scripts/`**: Setup and launch scripts
 
 ### **Contributing**
-
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/new-feature`
-3. Make changes and add tests
-4. Run quality checks: `./scripts/check_quality.sh`
-5. Commit changes: `git commit -m "Add new feature"`
-6. Push to branch: `git push origin feature/new-feature`
-7. Create a Pull Request
+2. Create feature branch: `git checkout -b feature/new-feature`
+3. Test changes: `python scripts/quick_start.py --test`
+4. Commit: `git commit -m "Add new feature"`
+5. Push: `git push origin feature/new-feature`
+6. Create Pull Request
 
-## 📚 **Documentation**
+### **Running Tests**
+```bash
+# System-wide test
+python scripts/quick_start.py --test
 
-- **[API Documentation](docs/API.md)**: Detailed API reference
-- **[Training Guide](docs/TRAINING.md)**: Comprehensive training tutorial
-- **[Troubleshooting](docs/TROUBLESHOOTING.md)**: Common issues and solutions
-- **[Examples](notebooks/)**: Jupyter notebook tutorials
+# Individual component tests
+python src/utils/helpers.py  # Check dependencies
+python -c "import src.eeg.processor; print('EEG processor OK')"
+python -c "import src.robot.controller; print('Robot controller OK')"
+```
+
+## 📚 **Additional Resources**
+
+- **Configuration Examples**: See `config/` directory for sample YAML files
+- **Component Tests**: Individual module tests in each `src/` subdirectory
+- **System Logs**: Automatic logging to `logs/` directory during operation
 
 ## 📄 **License**
 
@@ -475,11 +493,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **MNE Python** for signal processing capabilities
 - **PyTorch** for machine learning framework
 
-## 📞 **Support**
+## 📞 **Support & Community**
 
-- **Issues**: [GitHub Issues](https://github.com/MonashDeepNeuron/Motorola-Dream-Machine/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/MonashDeepNeuron/Motorola-Dream-Machine/discussions)
-- **Email**: [contact@monashdeepneuron.org](mailto:contact@monashdeepneuron.org)
+- **Issues**: [GitHub Issues](https://github.com/MonashDeepNeuron/Motorola-Dream-Machine/issues) for bug reports
+- **Discussions**: [GitHub Discussions](https://github.com/MonashDeepNeuron/Motorola-Dream-Machine/discussions) for questions  
+- **System Logs**: Check `logs/` directory for detailed error information
+- **Configuration Help**: See sample files in `config/` directory
 
 ## 🚀 **Citation**
 
