@@ -1,0 +1,37 @@
+{
+    "pipeline_config": {
+        "sample_rate": 256,
+        "window_size": 4.0,
+        "step_size": 2.0,
+        "batch_size": 256,
+        "n_electrodes": 32,
+        "n_frequency_bands": 5,
+        "n_classes": 5,
+        "command_rate": 10
+    },
+    "frequency_bands": {
+        "delta": [0.5, 4],
+        "theta": [4, 8],
+        "alpha": [8, 12],
+        "beta": [12, 30],
+        "gamma": [30, 45]
+    },
+    "robot_commands": {
+        "0": {"dx": 0.0, "dy": 0.0, "dz": 0.0, "drx": 0.0, "dry": 0.0, "drz": 0.0},
+        "1": {"dx": 0.05, "dy": 0.0, "dz": 0.0, "drx": 0.0, "dry": 0.0, "drz": 0.0},
+        "2": {"dx": -0.05, "dy": 0.0, "dz": 0.0, "drx": 0.0, "dry": 0.0, "drz": 0.0},
+        "3": {"dx": 0.0, "dy": 0.05, "dz": 0.0, "drx": 0.0, "dry": 0.0, "drz": 0.0},
+        "4": {"dx": 0.0, "dy": -0.05, "dz": 0.0, "drx": 0.0, "dry": 0.0, "drz": 0.0}
+    },
+    "model_config": {
+        "cnn_time_pool": 2,
+        "pointwise_groups": 1,
+        "learning_rate": 0.001,
+        "dropout": 0.3
+    },
+    "paths": {
+        "model_weights": "model/trained_eeg_model.pth",
+        "robot_command_file": "ursim_test_v1/asynchronous_deltas.jsonl",
+        "log_dir": "logs"
+    }
+}

@@ -1,0 +1,167 @@
+# Emotiv Headset Configuration
+
+# Authentication (Get from Emotiv Developer Portal)
+authentication:
+  client_id: "your_client_id_here"
+  client_secret: "your_client_secret_here"
+  username: "your_emotiv_username"
+  password: "your_emotiv_password"
+  
+# Headset Configuration
+headset:
+  # Supported models: EPOC_X, FLEX, INSIGHT, EPOC_PLUS
+  model: "EPOC_X"
+  
+  # Connection type: bluetooth, usb, wifi
+  connection: "bluetooth"
+  
+  # Headset ID (leave empty for auto-detection)
+  device_id: ""
+  
+  # Channel configuration
+  channels:
+    # Standard 10-20 electrode positions for EPOC X
+    eeg_channels: [
+      "AF3", "F7", "F3", "FC5", "T7", "P7", "O1", "O2",
+      "P8", "T8", "FC6", "F4", "F8", "AF4", "FC1", "FC2"
+    ]
+    
+    # Reference channels
+    reference_channels: ["CMS", "DRL"]
+    
+    # Motion sensors (if available)
+    motion_channels: ["GYROX", "GYROY", "GYROZ", "ACCX", "ACCY", "ACCZ"]
+
+# Data Streaming Settings
+streaming:
+  # Data streams to enable
+  streams:
+    eeg: true                   # Raw EEG data
+    motion: false               # Motion sensor data
+    performance_metrics: true   # Attention, engagement, etc.
+    facial_expressions: false   # Facial expression detection
+    mental_commands: false      # Mental command detection
+    
+  # Streaming parameters
+  eeg_rate: 256                 # EEG sampling rate (Hz)
+  motion_rate: 32               # Motion sensor rate (Hz)
+  
+  # Data format
+  data_format: "float32"        # Data type for streaming
+  buffer_size: 1024             # Stream buffer size
+
+# Data Quality Monitoring
+quality:
+  # Contact quality monitoring
+  contact_quality:
+    enabled: true               # Monitor electrode contact
+    threshold: 2                # Minimum quality level (1-4)
+    check_interval: 5           # Check interval (seconds)
+    
+  # Signal quality
+  signal_quality:
+    noise_threshold: 50         # Maximum noise level (μV)
+    artifact_detection: true    # Enable artifact detection
+    impedance_check: true       # Check electrode impedance
+    
+  # Automatic quality improvement
+  auto_improvement:
+    enabled: true               # Enable automatic adjustments
+    refit_detection: true       # Detect when headset needs refitting
+
+# Processing Settings
+processing:
+  # Preprocessing
+  preprocessing:
+    dc_removal: true            # Remove DC offset
+    notch_filter: 50            # Notch filter frequency (Hz) for power line noise
+    bandpass_filter: [0.5, 45] # Bandpass filter range (Hz)
+    
+  # Real-time processing
+  realtime:
+    chunk_size: 256             # Processing chunk size (samples)
+    overlap: 128                # Chunk overlap (samples)
+    latency_target: 100         # Target latency (ms)
+
+# Session Management
+session:
+  # Session settings
+  auto_start: false             # Automatically start session on connection
+  session_timeout: 3600         # Session timeout (seconds)
+  
+  # Data recording
+  recording:
+    auto_record: true           # Automatically record session data
+    record_raw: true            # Record raw EEG data
+    record_processed: true      # Record processed features
+    compression: true           # Compress recorded data
+    
+  # Session metadata
+  metadata:
+    subject_id: ""              # Subject identifier
+    session_type: ""            # Session type (training, testing, etc.)
+    notes: ""                   # Session notes
+
+# Calibration
+calibration:
+  # Baseline calibration
+  baseline:
+    enabled: true               # Enable baseline calibration
+    duration: 60                # Baseline duration (seconds)
+    instruction: "Please relax and clear your mind"
+    
+  # Mental task calibration
+  mental_tasks:
+    enabled: true               # Enable mental task calibration
+    tasks:
+      - name: "left_hand"
+        instruction: "Imagine moving your left hand"
+        duration: 30
+        repetitions: 5
+        
+      - name: "right_hand"
+        instruction: "Imagine moving your right hand"
+        duration: 30
+        repetitions: 5
+        
+      - name: "forward"
+        instruction: "Imagine moving forward"
+        duration: 30
+        repetitions: 5
+        
+      - name: "rest"
+        instruction: "Relax and clear your mind"
+        duration: 30
+        repetitions: 5
+
+# Error Handling
+error_handling:
+  # Connection errors
+  connection:
+    retry_attempts: 3           # Number of retry attempts
+    retry_delay: 5              # Delay between retries (seconds)
+    timeout: 30                 # Connection timeout (seconds)
+    
+  # Data stream errors
+  streaming:
+    missing_data_threshold: 100 # Missing data threshold (ms)
+    stream_recovery: true       # Attempt stream recovery
+    fallback_mode: "simulation" # Fallback mode if streaming fails
+    
+# Advanced Settings
+advanced:
+  # Low-level device settings
+  device:
+    power_management: "balanced" # Power mode: low_power, balanced, performance
+    wireless_strength: "auto"    # Wireless signal strength
+    
+  # Protocol settings
+  protocol:
+    packet_loss_threshold: 5    # Maximum packet loss percentage
+    latency_monitoring: true    # Monitor communication latency
+    
+  # Debug settings
+  debug:
+    verbose_logging: false      # Enable verbose logging
+    save_raw_packets: false     # Save raw communication packets
+    performance_monitoring: true # Monitor performance metrics

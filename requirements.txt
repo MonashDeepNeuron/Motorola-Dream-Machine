@@ -1,0 +1,26 @@
+# Core dependencies (required)
+numpy>=1.19.0
+scipy>=1.6.0
+pyyaml>=5.4.0
+pandas>=1.2.0
+matplotlib>=3.3.0
+scikit-learn>=0.24.0
+
+# Machine learning (recommended)
+torch>=1.8.0
+joblib>=1.0.0
+
+# EEG processing (recommended)
+mne>=0.23.0
+
+# Visualization (optional)
+seaborn>=0.11.0
+plotly>=5.0.0
+
+# Development tools (optional)
+pytest>=6.0.0
+jupyter>=1.0.0
+ipywidgets>=7.6.0
+
+# Note: Emotiv Cortex SDK must be installed separately:
+# pip install git+https://github.com/Emotiv/cortex-python.git
