@@ -122,3 +122,45 @@ def compute_window_band_power(
                 window_band_avg_across_channels[w_idx][band_name] = 0.0
                 
     return per_window_channel_results, window_band_avg_across_channels
+
+def calculate_psd_for_window(
+    window_data: np.ndarray,  # Shape: (n_samples, n_channels)
+    sfreq: float,
+    bands: Optional[Dict[str, Tuple[float, float]]] = None,
+) -> Dict[str, float]:
+    """
+    Calculates the average Power Spectral Density (PSD) across all channels 
+    for a given numpy window. This is adapted for real-time use by the consumer.
+    
+    Returns:
+        A dictionary mapping band_name to its average power (μV²/Hz).
+    """
+    if bands is None:
+        bands = DefaultBands
+
+    window_data_ch_first = window_data.T
+
+    n_channels, n_samples = window_data_ch_first.shape
+    if n_samples == 0:
+        return {band_name: 0.0 for band_name in bands}
+    
+    nperseg_val = min(256, n_samples)
+    freqs, psd_density = signal.welch(
+        window_data_ch_first,
+        fs=sfreq,
+        nperseg=nperseg_val,
+        scaling="density",  # V^2/Hz
+        axis=-1 
+    )
+    psd_density_uv = psd_density * 1e12
+
+    avg_psd_per_band: Dict[str, float] = {}
+    for band_name, (fmin, fmax) in bands.items():
+        idx_band = np.logical_and(freqs >= fmin, freqs <= fmax)
+        if np.any(idx_band):
+            avg_power = np.mean(psd_density_uv[:, idx_band])
+            avg_psd_per_band[band_name] = float(avg_power)
+        else:
+            avg_psd_per_band[band_name] = 0.0
+            
+    return avg_psd_per_band

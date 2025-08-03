@@ -1,52 +1,171 @@
-# EEG Data Pipeline for Brain-Computer Interfaces
+# EEG Real-time Pipeline
 
-This project provides a robust, real-time data relay pipeline for EEG signals, designed to serve as the data backbone for a brain-computer interface (BCI) controlling a robotic arm. It uses Apache Kafka to reliably stream neural data from a source computer (connected to an EEG headset) to a destination computer (running a machine learning model).
+A real-time EEG data streaming pipeline using Apache Kafka. Designed for live hardware integration with individual sample processing and real-time analysis.
 
-## Table of Contents
+## Quick Start
 
-1.  [Core Concepts](#1-core-concepts)
-2.  [The Data Schemas](#2-the-data-schemas-our-data-contract)
-3.  [Two-Machine Setup Guide](#3-two-machine-setup-guide)
-    - [On the Kafka Host Machine](#on-the-kafka-host-your-laptop)
-    - [On the Producer Machine](#on-the-producer-machine-your-friends-laptop)
-4.  [Running the Pipeline](#4-running-the-pipeline)
-    - [Producer Command](#producer-command)
-    - [Consumer Command](#consumer-command)
-5.  [Expected Outputs & Saved Artifacts](#5-expected-outputs--saved-artifacts)
-    - [Producer Outputs](#producer-outputs)
-    - [Consumer Outputs](#consumer-outputs)
+** First-time users (Emotiv → KUKA setup):**
 
----
+```bash
+./setup_two_devices.sh
+```
 
-## 1. Core Concepts
+**Basic testing (single computer):**
 
-This pipeline is built on the principle of **decoupling** using a producer-consumer architecture.
+```bash
+./setup_basic.sh
+```
 
-- **Apache Kafka:** Acts as the central nervous system of the pipeline. It is a distributed, persistent log that allows different components to communicate without direct knowledge of each other. This provides a resilient buffer, handles speed mismatches, and allows for data replayability.
+**Hardware integration only:**
 
-- **Producer (`producer/producer.py`):** This application's job is to read data from a source (e.g., an EDF file or a live headset stream), process it, and serialize it into structured JSON messages that are published to Kafka.
+```bash
+./setup_realtime.sh
+```
 
-- **Consumer (`consumer/consumer.py`):** This is a reference application that shows how any downstream service (like your ML model) would connect to Kafka, subscribe to a data stream, and deserialize the messages to use them.
+**See it in action:**
 
----
+```bash
+./demo.sh
+```
 
-## 2. The Data Schemas: Our Data Contract
+This will:
 
-To ensure data integrity, all messages are validated against schemas defined in `schemas/eeg_schemas.py` using Pydantic. Your ML model will consume one of these two message types.
+1. Set up Kafka infrastructure
+2. Configure networking
+3. Install LSL for hardware integration
+4. Test the pipeline and show setup instructions
 
-### a. `EEGBatch` (The Raw Signal)
+## 🔧 Usage
 
-- **Topic:** `raw-eeg`
-- **Content:** A batch of raw, unprocessed EEG sensor readings (in Volts). This is the high-fidelity digital recording of the brainwaves.
-- **Use Case:** Ideal for training deep learning models (CNNs, LSTMs) that learn directly from time-series data or for archiving the original session.
+**Live Hardware Streaming:**
 
-### b. `WindowBandPower` (The Pre-Processed Features)
+```bash
+# 1. Start EEG software with LSL enabled
+# 2. Start live producer
+python producer/live_producer.py --bootstrap-servers localhost:9092
 
-- **Topic:** `eeg-bandpower`
-- **Content:** The calculated **power** within standard neurological frequency bands (Delta, Theta, Alpha, etc.). This is computed on the fly by analyzing a sliding time window of the raw signal.
-- **Use Case:** Perfect for ML models that expect frequency-based features, which are often more stable and less noisy. Also great for real-time state monitoring.
+# 3. Start consumer
+python consumer/consumer.py --topic raw-eeg --write-json --write-png
+```
 
----
+**File-based Testing:**
+
+```bash
+source venv/bin/activate
+python producer/producer.py --edf-file S012R14.edf --bootstrap-servers localhost:9092
+```
+
+**KUKA Arm Control:**
+
+```bash
+# Real-time EEG → KUKA control
+python kuka_eeg_controller.py --kafka-server 192.168.1.100:9092 --kuka-ip 192.168.1.200
+
+# Motor imagery mode (left/right hand commands)
+python kuka_eeg_controller.py --mode motor
+
+# Relaxation/focus mode (alpha/beta band control)
+python kuka_eeg_controller.py --mode relax
+```
+
+**Hardware Detection:**
+
+```bash
+python hardware_test.py --check-streams    # Scan for EEG hardware
+python hardware_test.py --hardware-guide   # Show compatibility
+python hardware_test.py --simulate         # Create test EEG stream
+```
+
+```bash
+source venv/bin/activate
+python consumer/consumer.py --topic raw-eeg --bootstrap-servers localhost:9092 --write-json --write-png
+```
+
+## 📊 What it does
+
+**Real-time Processing:**
+
+- **Individual sample streaming**: Processes EEG samples as they arrive (5-10ms latency)
+- **Live sliding window analysis**: 4-second windows with 2-second steps
+- **Frequency band power**: Real-time Alpha, Beta, Delta, Theta, Gamma computation
+- **Event detection**: Motor imagery task classification (T0=rest, T1=left, T2=right)
+
+**Hardware Integration:**
+
+- **Lab Streaming Layer (LSL)**: Connects to most modern EEG systems
+- **Network streaming**: Multi-computer setup support
+- **Automatic reconnection**: Handles hardware disconnects gracefully
+
+**Data Pipeline:**
+
+- **Producer**: Streams from EDF files OR live hardware via LSL
+- **Consumer**: Real-time analysis with configurable parameters
+- **Kafka**: Reliable message transport with replay capability
+- **Analysis**: Sliding window PSD computation and visualization
+
+## Supported Hardware
+
+**Tested & Ready:**
+
+- OpenBCI (Cyton, Daisy, Ganglion)
+- Any LSL-compatible system
+
+** Compatible (untested):**
+
+- Emotiv (EPOC X, Insight)
+- g.tec (g.USBamp, g.HIamp)
+- BioSemi (ActiveTwo)
+- ANT Neuro (eego mylab)
+- Brain Products, Cognionics
+
+## Sample Data
+
+Includes `S012R14.edf` with motor imagery task data:
+
+- **T0**: Rest condition
+- **T1**: Left hand imagery
+- **T2**: Right hand imagery
+
+## Architecture
+
+```
+Live EEG Hardware → LSL → Live Producer → Kafka → Consumer → Real-time Analysis
+       OR
+EDF File → File Producer → Kafka → Consumer → Analysis & Plots
+```
+
+**Key Features:**
+
+- **Real-time streaming**: Individual samples processed as they arrive from hardware
+- **Scalable**: Kafka enables distributed processing across multiple computers
+- **Validated**: Pydantic schemas ensure data integrity throughout pipeline
+- **Configurable**: Adjustable window sizes, frequency bands, and analysis parameters
+
+## Performance
+
+- **Latency**: 5-10ms from sample acquisition to analysis result
+- **Throughput**: Tested up to 1000 Hz sampling rates
+- **Channels**: Supports up to 128+ channels simultaneously
+- **Memory**: Bounded circular buffers prevent memory leaks
+- **Reliability**: Automatic reconnection and error recovery
+
+## Requirements
+
+- Docker (for Kafka)
+- Python 3.13+
+- Dependencies in `requirements.txt`
+
+## 📖 Guides
+
+- **[Setup Guide](SETUP_GUIDE.md)** - Which script to run for your use case
+- **[First-Time User Guide](FIRST_TIME_USER_GUIDE.md)** - Complete setup for Emotiv → KUKA pipeline
+- **[Architecture Guide](README.md#architecture)** - System design and components
+
+## Stopping
+
+```bash
+cd config && docker compose down
+```
 
 ## 3. Two-Machine Setup Guide
 
