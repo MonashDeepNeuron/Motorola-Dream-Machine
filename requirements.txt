@@ -1,0 +1,7 @@
+pylsl>=1.16
+kafka-python[lz4]
+numpy
+pydantic
+scipy
+matplotlib
+mne

@@ -49,7 +49,7 @@ pip install -r requirements.txt
 brew install labstreaminglayer/tap/lsl
 
 # Linux
-sudo apt-get install liblsl-dev
+# LSL is included with pylsl package - no additional install needed!
 
 # Windows
 # Download LSL from: https://github.com/sccn/liblsl/releases

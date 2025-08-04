@@ -20,7 +20,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     LSL_PATH="/opt/homebrew/lib"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     echo -e "${GREEN}[1/5]${NC} Detected Linux"
-    LSL_INSTALL_CMD="sudo apt-get install liblsl-dev"
+    LSL_INSTALL_CMD="# LSL included with pylsl package - no additional install needed"
     LSL_PATH="/usr/local/lib"
 else
     echo -e "${YELLOW}[1/5]${NC} Detected Windows/Other - manual LSL installation required"

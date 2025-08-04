@@ -159,6 +159,7 @@ EDF File → File Producer → Kafka → Consumer → Analysis & Plots
 
 - **[Setup Guide](SETUP_GUIDE.md)** - Which script to run for your use case
 - **[First-Time User Guide](FIRST_TIME_USER_GUIDE.md)** - Complete setup for Emotiv → KUKA pipeline
+- **[Device Setup Example](DEVICE_SETUP_EXAMPLE.md)** - Real signal flow between two devices
 - **[Architecture Guide](README.md#architecture)** - System design and components
 
 ## Stopping

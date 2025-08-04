@@ -41,9 +41,8 @@ if [ "$device_choice" = "1" ]; then
         fi
         brew install labstreaminglayer/tap/lsl
     elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        # Linux
-        sudo apt-get update
-        sudo apt-get install -y liblsl-dev
+        # Linux - pylsl package includes LSL binaries, no system install needed
+        echo "✅ Linux detected - LSL will be available via pylsl package"
     else
         echo "⚠️  Please manually install LSL from: https://github.com/sccn/liblsl/releases"
     fi
