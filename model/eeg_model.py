@@ -249,3 +249,4 @@ if __name__ == "__main__":
 
     out = model(dummy)
     print("out shape:", out.shape)  # (B, 5)
+    torch.save(model.state_dict(), "eeg_model.pth")
