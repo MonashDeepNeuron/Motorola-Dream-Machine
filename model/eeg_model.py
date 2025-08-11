@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # ===============================================================
-# v1.4
+# v1.5
 # EEG-to-Robot-Arm — CNN (freq/time) → early spatial mix → Tiny Transformer
 # - No GCN
 # - Device/dtype-safe positional encoding
 # - LazyLinear-safe init
-# - Forward that returns final logits AND a forward_seq for per-frame logits
+# - forward_seq for per-frame logits + forward for final logits
 # - Hysteresis helper + micro-benchmark + smoke test
+# - Safe torch.compile wrapper (skips on CPU/Windows)
 # ===============================================================
 
 from __future__ import annotations
@@ -17,11 +18,10 @@ from typing import Optional, Tuple
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch import Tensor
 from torch.nn.parameter import UninitializedParameter
 
-# Optional perf toggles
+# Optional perf toggles (safe on CPU/GPU)
 try:
     torch.set_float32_matmul_precision("medium")
 except Exception:
@@ -122,6 +122,7 @@ class TinyTransformer(nn.Module):
     2-layer causal Transformer over time frames.
     Input:  (B, T, E)
     Output: (B, E)  ← last time step embedding
+    Also exposes encode_seq to return per-frame embeddings.
     """
     def __init__(
         self, embed: int, n_heads: int = 4, ff: int = 512, n_layers: int = 2, p_drop: float = 0.1
@@ -140,12 +141,17 @@ class TinyTransformer(nn.Module):
         self.enc = nn.TransformerEncoder(layer, num_layers=n_layers)
         self.pos = PositionalEncoding(embed)
 
-    def forward(self, x: Tensor) -> Tensor:
-        # causal mask: prevent future leakage
+    def encode_seq(self, x: Tensor) -> Tensor:
+        """
+        Returns per-frame embeddings: (B, T, E)
+        """
         B, T, E = x.shape
         mask = torch.triu(torch.ones(T, T, device=x.device, dtype=torch.bool), diagonal=1)
-        z = self.enc(self.pos(x), mask=mask)
-        return z[:, -1]  # (B, E)
+        return self.enc(self.pos(x), mask=mask)
+
+    def forward(self, x: Tensor) -> Tensor:
+        z = self.encode_seq(x)  # (B, T, E)
+        return z[:, -1]         # (B, E)
 
 
 # ----------------------------------------------------------------
@@ -255,8 +261,7 @@ class EEG2Arm(nn.Module):
         x = self.frame_proj(x)                  # (B, T2, E)
 
         # Transformer (causal) → per-frame embeddings
-        mask = torch.triu(torch.ones(T2, T2, device=x.device, dtype=torch.bool), diagonal=1)
-        z = self.tform.enc(self.tform.pos(x), mask=mask)  # (B, T2, E)
+        z = self.tform.encode_seq(x)            # (B, T2, E)
 
         # Per-frame logits
         logits = self.fc(z)                     # (B, T2, n_classes)
@@ -327,6 +332,26 @@ def benchmark(model: nn.Module, shape=(1, 32, 4, 12), iters: int = 200, warmup: 
 
 
 # ----------------------------------------------------------------
+# Safe torch.compile wrapper (skips on CPU; uses compile on CUDA)
+# ----------------------------------------------------------------
+def safe_compile(model: nn.Module) -> nn.Module:
+    """
+    Use torch.compile on CUDA; skip on CPU (avoids needing MSVC cl.exe on Windows).
+    """
+    if not hasattr(torch, "compile"):
+        return model
+    if torch.cuda.is_available():
+        try:
+            return torch.compile(model, mode="reduce-overhead", fullgraph=True)
+        except Exception as e:
+            print(f"[compile] CUDA compile failed, falling back to eager: {e}")
+            return model
+    else:
+        print("[compile] Skipping torch.compile on CPU (eager mode).")
+        return model
+
+
+# ----------------------------------------------------------------
 # Smoke test
 # ----------------------------------------------------------------
 if __name__ == "__main__":
@@ -345,12 +370,8 @@ if __name__ == "__main__":
         p_drop=0.1,
     ).to(device)
 
-    # (Optional) Torch 2.x: compile for extra speed
-    if hasattr(torch, "compile"):
-        try:
-            model = torch.compile(model)  # type: ignore[attr-defined]
-        except Exception:
-            pass
+    # Safely compile (will skip on CPU)
+    model = safe_compile(model)
 
     dummy = dummy.to(device)
 
@@ -367,9 +388,7 @@ if __name__ == "__main__":
 
     # Hysteresis demo (toy probabilities)
     hys = Hysteresis(k=5, prob_thresh=0.75, consecutive=3, rest_idx=4)
-    probs = torch.tensor([0.1, 0.1, 0.1, 0.8, 0.1])  # pretend "grasp" is index 3
+    probs = torch.tensor([0.1, 0.1, 0.1, 0.8, 0.1])
     for t in range(5):
         cls = hys.step(probs)
         print(f"[tick {t}] cls={cls}")
-
-    torch.save(model.state_dict(), "eeg_model.pth")
