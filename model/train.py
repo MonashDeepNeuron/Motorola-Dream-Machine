@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # ===============================================================
+# v1.0
 # EEG-to-Robot-Arm — Training script (lean)
 # - Loads X.npy (N,C,F,T) and y.npy (N,)
 # - Trains EEG2Arm and saves a robust checkpoint (*.pt)
@@ -13,7 +14,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader, Subset
 
-from eeg_model import EEG2Arm, safe_compile          # your model
+from eeg_model import EEG2Arm, safe_compile         
 from utils import (                       # shared utils
     ModelCfg, set_seed, save_checkpoint
 )
