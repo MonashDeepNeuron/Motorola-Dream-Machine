@@ -53,9 +53,9 @@ class EEGNpyDataset(Dataset):
         return self.X.shape[0]
 
     def __getitem__(self, i):
-        x = self.X[i].astype(np.float32, copy=False)  # (C, F, T)
-        y = int(self.y[i])
+        x = self.X[i].astype(np.float32, copy=False).copy()  # ensure writeable
         x_t = torch.from_numpy(x)
+        y = int(self.y[i])
 
         if self.per_sample_normalize:
             mu = x_t.mean(dim=(1, 2), keepdim=True)
@@ -114,7 +114,8 @@ def train_one_epoch(model, loader, optimizer, scaler, device, criterion, max_gra
         y = torch.as_tensor(y, device=device, dtype=torch.long)
 
         optimizer.zero_grad(set_to_none=True)
-        with torch.cuda.amp.autocast(enabled=torch.cuda.is_available()):
+        device_type = "cuda" if torch.cuda.is_available() else "cpu"
+        with torch.amp.autocast(device_type=device_type, enabled=(device_type == "cuda")):
             logits = model(x)                        # (B, K)
             loss = criterion(logits, y)
 
@@ -143,7 +144,8 @@ def evaluate(model, loader, device, criterion):
     for x, y in tqdm(loader, desc="valid", leave=False):
         x = x.to(device, non_blocking=True)
         y = torch.as_tensor(y, device=device, dtype=torch.long)
-        with torch.cuda.amp.autocast(enabled=torch.cuda.is_available()):
+        device_type = "cuda" if torch.cuda.is_available() else "cpu"
+        with torch.amp.autocast(device_type=device_type, enabled=(device_type == "cuda")):            
             logits = model(x)
             loss = criterion(logits, y)
         total_loss += float(loss.item()) * x.size(0)
@@ -208,9 +210,9 @@ def fit(
     # Loss/optim
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=3, verbose=True)
-    scaler = torch.cuda.amp.GradScaler(enabled=torch.cuda.is_available())
-
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=3)
+    device_type = "cuda" if torch.cuda.is_available() else "cpu"
+    scaler = torch.amp.GradScaler(device_type)
     best_val = float("inf")
     best_epoch = -1
 
@@ -239,7 +241,7 @@ def fit(
             example_input_shape = (1, n_elec, n_bands, T)
             metrics = {"val_loss": va_loss, "val_acc": va_acc}
             save_checkpoint(out_ckpt, model, cfg, example_input_shape, epoch, metrics)
-
+        print('\n')
     print(f"[done] best epoch={best_epoch}, best val_loss={best_val:.4f}")
 
 
