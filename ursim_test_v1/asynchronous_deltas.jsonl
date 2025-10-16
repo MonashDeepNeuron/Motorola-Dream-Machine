@@ -1,11 +1,27 @@
-{"dx": -0.05, "dy": 0.00, "dz": 0.00}
-{"dx": -0.05, "dy": 0.00, "dz": 0.00}
-{"dx": -0.05, "dy": 0.00, "dz": 0.00}
-{"dx": 0.05, "dy": 0.00, "dz": 0.00}
-{"dx": 0.05, "dy": 0.00, "dz": 0.00}
-{"dx": 0.05, "dy": 0.00, "dz": 0.00}
-{"dx": 0.05, "dy": 0.00, "dz": 0.00}
-{"dx": 0.05, "dy": 0.00, "dz": 0.00}
-{"dx": -0.05, "dy": 0.00, "dz": 0.00}
-{"dx": 0.05, "dy": 0.00, "dz": 0.00}
-{"dx": 0.00, "dy": 0.00, "dz": 0.00}
+
+{"dx": 0.016604751520439946, "dy": 0, "dz": 0.0029753683722436456, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:44.012355", "command_number": 1, "dominant_band": "alpha"}
+{"dx": 0.01791145492498765, "dy": 0, "dz": 0.003417685646053324, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:45.014336", "command_number": 2, "dominant_band": "alpha"}
+{"dx": -0.015776680359363984, "dy": 0, "dz": 0.0024735378176168905, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:46.017857", "command_number": 3, "dominant_band": "delta"}
+{"dx": 0.01698386818341645, "dy": 0, "dz": 0.0029736946037004454, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:47.020004", "command_number": 4, "dominant_band": "alpha"}
+{"dx": 0.01783777986643912, "dy": 0, "dz": 0.003123676420282053, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:48.024408", "command_number": 5, "dominant_band": "alpha"}
+{"dx": 0.01888977392463843, "dy": 0, "dz": 0.0050061170518445955, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:49.026936", "command_number": 6, "dominant_band": "alpha"}
+{"dx": 0.017509616778163067, "dy": 0, "dz": 0.0031739266214721035, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:50.029086", "command_number": 7, "dominant_band": "alpha"}
+{"dx": 0.018263687530163403, "dy": 0, "dz": 0.003272921249877843, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:51.031078", "command_number": 8, "dominant_band": "alpha"}
+{"dx": 0.017827267648721022, "dy": 0, "dz": -0.003071320518478213, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:52.033699", "command_number": 9, "dominant_band": "alpha"}
+{"dx": 0.017750182461264447, "dy": 0, "dz": -0.0033274422200441104, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:53.036813", "command_number": 10, "dominant_band": "alpha"}
+{"dx": 0.016478359923834927, "dy": 0, "dz": 0.002858532998703159, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:54.038244", "command_number": 11, "dominant_band": "alpha"}
+{"dx": 0.01579600449567705, "dy": 0, "dz": 0.0025382702823955406, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:55.044241", "command_number": 12, "dominant_band": "alpha"}
+{"dx": -0.01584058138290308, "dy": 0, "dz": -0.002464009458181464, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:56.047726", "command_number": 13, "dominant_band": "delta"}
+{"dx": 0.016258144450038002, "dy": 0, "dz": 0.0026460453587255532, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:57.050635", "command_number": 14, "dominant_band": "alpha"}
+{"dx": 0.017300245186046545, "dy": 0, "dz": 0.00316099612304529, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:58.053928", "command_number": 15, "dominant_band": "alpha"}
+{"dx": 0.018314556088843005, "dy": 0, "dz": 0.003366884984108226, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:14:59.057193", "command_number": 16, "dominant_band": "alpha"}
+{"dx": 0.017124115310840106, "dy": 0, "dz": -0.0031404976361291584, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:15:00.061447", "command_number": 17, "dominant_band": "alpha"}
+{"dx": -0.01617107792464414, "dy": 0, "dz": -0.00247980912926901, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:15:01.065211", "command_number": 18, "dominant_band": "delta"}
+{"dx": -0.017063808234867552, "dy": 0, "dz": -0.0025095635922784184, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:15:02.068681", "command_number": 19, "dominant_band": "delta"}
+{"dx": 0.018120582082464223, "dy": 0, "dz": 0.0034318357530713607, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:15:03.074072", "command_number": 20, "dominant_band": "alpha"}
+{"dx": 0.017804548279743974, "dy": 0, "dz": 0.003153596371491752, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:15:04.076429", "command_number": 21, "dominant_band": "alpha"}
+{"dx": -0.015712979877054594, "dy": 0, "dz": 0.002497056126388862, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:15:05.079136", "command_number": 22, "dominant_band": "delta"}
+{"dx": 0.017126017366742657, "dy": 0, "dz": 0.0031346921971338974, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:15:06.097522", "command_number": 23, "dominant_band": "alpha"}
+{"dx": 0.01776595962531207, "dy": 0, "dz": 0.003526006107371289, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:15:07.105991", "command_number": 24, "dominant_band": "alpha"}
+{"dx": 0.017746581685631493, "dy": 0, "dz": 0.0030854518619015947, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:15:08.110905", "command_number": 25, "dominant_band": "alpha"}
+{"dx": 0.016183211317725474, "dy": 0, "dz": 0.002525326863860691, "drx": 0, "dry": 0, "drz": 0, "timestamp": "2025-10-08T15:15:09.113937", "command_number": 26, "dominant_band": "alpha"}

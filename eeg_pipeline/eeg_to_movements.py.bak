@@ -1,0 +1,275 @@
+#!/usr/bin/env python3
+"""
+Simple EEG → Movement Commands
+
+Reads EEG file, analyzes band power, generates movement deltas (dx, dy, dz)
+and appends them to a JSON file.
+
+Each line in output file is a JSON object with:
+{
+    "timestamp": "2025-10-08T...",
+    "dx": 10.5,
+    "dy": 0.0,
+    "dz": 5.2,
+    "dominant_band": "alpha",
+    "band_strength": 1.23,
+    "band_powers": {"delta": 0.1, "theta": 0.2, ...}
+}
+
+Usage:
+    python eeg_to_movements.py --edf-file data.edf --output movements.json --speed 5
+"""
+
+import argparse
+import json
+import time
+from pathlib import Path
+from datetime import datetime
+
+import mne
+import numpy as np
+from scipy import signal
+
+
+class EEGToMovement:
+    """Convert EEG band powers to movement deltas"""
+    
+    def __init__(self, movement_scale: float = 30.0):
+        self.movement_scale = movement_scale
+        self.command_count = 0
+        
+        # Band definitions
+        self.bands = {
+            'delta': (0.5, 4),
+            'theta': (4, 8),
+            'alpha': (8, 13),
+            'beta': (13, 30),
+            'gamma': (30, 45)
+        }
+        
+        print(f"Movement scale: {movement_scale} mm/s")
+    
+    def compute_band_powers(self, data: np.ndarray, sfreq: float, channels: list) -> dict:
+        """Compute average band power across EEG channels"""
+        
+        # Filter to EEG channels only (exclude metadata)
+        eeg_idx = [i for i, ch in enumerate(channels) 
+                   if not any(x in ch for x in ['TIME_STAMP', 'COUNTER', 'INTERPOLATED', 'OR_'])]
+        
+        if not eeg_idx:
+            return {}
+        
+        eeg_data = data[eeg_idx, :]
+        
+        # Compute PSD
+        nperseg = min(int(sfreq), eeg_data.shape[1])
+        freqs, psd = signal.welch(eeg_data, fs=sfreq, nperseg=nperseg, 
+                                  noverlap=nperseg // 2, axis=-1)
+        
+        # Average across channels
+        avg_psd = np.mean(psd, axis=0)
+        
+        # Band powers
+        powers = {}
+        for band, (low, high) in self.bands.items():
+            idx = np.logical_and(freqs >= low, freqs <= high)
+            if np.any(idx):
+                powers[band] = float(np.mean(avg_psd[idx]))
+            else:
+                powers[band] = 0.0
+        
+        return powers
+    
+    def band_to_delta(self, powers: dict) -> tuple:
+        """
+        Convert band powers to movement deltas.
+        
+        Mapping:
+        - Delta (0.5-4 Hz)   → Move backward  (dx < 0)
+        - Theta (4-8 Hz)     → Move down      (dz < 0)
+        - Alpha (8-13 Hz)    → Move forward   (dx > 0)
+        - Beta (13-30 Hz)    → Move up        (dz > 0)
+        - Gamma (30-45 Hz)   → Move right     (dy > 0)
+        
+        Returns:
+            (dx, dy, dz, dominant_band, strength)
+        """
+        if not powers:
+            return 0, 0, 0, "none", 0.0
+        
+        # Find dominant
+        dominant = max(powers.items(), key=lambda x: x[1])
+        band_name = dominant[0]
+        band_power = dominant[1]
+        
+        # Calculate strength
+        avg_power = sum(powers.values()) / len(powers)
+        strength = band_power / avg_power if avg_power > 0 else 1.0
+        
+        # Normalize strength (0 to 1 range)
+        strength_norm = min(max(strength - 1.0, 0), 1.0)
+        
+        # Calculate movement
+        move = self.movement_scale * strength_norm
+        
+        # Map to axes
+        deltas = {
+            'delta': (-move, 0, 0),
+            'theta': (0, 0, -move),
+            'alpha': (move, 0, 0),
+            'beta': (0, 0, move),
+            'gamma': (0, move, 0),
+        }
+        
+        dx, dy, dz = deltas.get(band_name, (0, 0, 0))
+        
+        return dx, dy, dz, band_name, strength
+    
+    def create_movement_command(self, dx: float, dy: float, dz: float, 
+                               band: str, strength: float, powers: dict) -> dict:
+        """Create movement command dict"""
+        self.command_count += 1
+        
+        return {
+            "timestamp": datetime.now().isoformat(),
+            "command_id": self.command_count,
+            "dx": round(dx, 2),
+            "dy": round(dy, 2),
+            "dz": round(dz, 2),
+            "dominant_band": band,
+            "band_strength": round(strength, 3),
+            "band_powers": {k: round(v, 6) for k, v in powers.items()}
+        }
+
+
+def process_eeg_file(edf_file: str, output_file: str, speed: float = 1.0, 
+                     window_size: float = 2.0, movement_scale: float = 30.0):
+    """Process EEG file and generate movement commands"""
+    
+    print("=" * 60)
+    print("EEG → Movement Delta Generator")
+    print("=" * 60)
+    print(f"Input:  {edf_file}")
+    print(f"Output: {output_file}")
+    print(f"Speed:  {speed}x")
+    print("=" * 60)
+    
+    # Load EEG
+    print("\nLoading EEG data...")
+    raw = mne.io.read_raw_edf(edf_file, preload=True, verbose=False)
+    sfreq = raw.info['sfreq']
+    channels = raw.ch_names
+    
+    print(f"  Channels: {len(channels)}")
+    print(f"  Sample rate: {sfreq} Hz")
+    print(f"  Duration: {raw.times[-1]:.1f}s")
+    
+    # Initialize processor
+    processor = EEGToMovement(movement_scale=movement_scale)
+    
+    # Window parameters
+    window_samples = int(window_size * sfreq)
+    step_samples = int(window_samples * 0.5)  # 50% overlap
+    
+    print(f"\n  Window: {window_size}s ({window_samples} samples)")
+    print(f"  Step: {step_samples} samples")
+    
+    # Prepare output
+    Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+    with open(output_file, 'w') as f:
+        f.write('')  # Clear file
+    
+    # Get data
+    data, times = raw.get_data(return_times=True)
+    n_samples = data.shape[1]
+    
+    print("\n" + "=" * 60)
+    print("Processing...")
+    print("=" * 60)
+    
+    window_count = 0
+    start_time = time.time()
+    
+    # Process windows
+    for start_idx in range(0, n_samples - window_samples, step_samples):
+        end_idx = start_idx + window_samples
+        
+        # Extract window
+        window_data = data[:, start_idx:end_idx]
+        window_time = times[start_idx]
+        
+        # Analyze
+        powers = processor.compute_band_powers(window_data, sfreq, channels)
+        dx, dy, dz, band, strength = processor.band_to_delta(powers)
+        
+        # Create command
+        cmd = processor.create_movement_command(dx, dy, dz, band, strength, powers)
+        
+        # Append to file
+        with open(output_file, 'a') as f:
+            f.write(json.dumps(cmd) + '\n')
+        
+        window_count += 1
+        
+        # Progress
+        if window_count % 10 == 0:
+            print(f"Window {window_count:3d} @ {window_time:6.1f}s | "
+                  f"{band:5s} ({strength:.2f}) → "
+                  f"Δ=({dx:+6.1f}, {dy:+6.1f}, {dz:+6.1f})")
+        
+        # Simulate real-time
+        sleep_time = (step_samples / sfreq) / speed
+        time.sleep(sleep_time)
+    
+    elapsed = time.time() - start_time
+    
+    print("=" * 60)
+    print("✅ Complete!")
+    print("=" * 60)
+    print(f"  Windows: {window_count}")
+    print(f"  Commands: {processor.command_count}")
+    print(f"  Time: {elapsed:.1f}s")
+    print(f"  Output: {output_file}")
+    print("=" * 60)
+    print("\nYou can now:")
+    print(f"  1. tail -f {output_file} | jq '.'")
+    print(f"  2. Read file line-by-line in your robot script")
+    print(f"  3. Each line has dx, dy, dz deltas to add to position")
+    print()
+
+
+def main():
+    parser = argparse.ArgumentParser(description="EEG → Movement Deltas")
+    parser.add_argument('--edf-file', required=True, help='EDF file path')
+    parser.add_argument('--output', default='movements.json', help='Output JSON file')
+    parser.add_argument('--speed', type=float, default=1.0, help='Playback speed')
+    parser.add_argument('--window-size', type=float, default=2.0, help='Window size (s)')
+    parser.add_argument('--movement-scale', type=float, default=30.0, help='Movement scale (mm/s)')
+    
+    args = parser.parse_args()
+    
+    if not Path(args.edf_file).exists():
+        print(f"❌ File not found: {args.edf_file}")
+        return 1
+    
+    try:
+        process_eeg_file(
+            edf_file=args.edf_file,
+            output_file=args.output,
+            speed=args.speed,
+            window_size=args.window_size,
+            movement_scale=args.movement_scale
+        )
+        return 0
+    except KeyboardInterrupt:
+        print("\n⏸️  Stopped")
+        return 0
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return 1
+
+
+if __name__ == '__main__':
+    exit(main())

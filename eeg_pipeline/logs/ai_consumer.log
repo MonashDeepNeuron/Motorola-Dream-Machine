@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/erolc/Projects/Motorola/motorolav2/Motorola-Dream-Machine/eeg_pipeline/ai_consumer/ai_consumer.py", line 23, in <module>
+    import torch
+ModuleNotFoundError: No module named 'torch'

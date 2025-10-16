@@ -1,0 +1,6 @@
+usage: integrated_robot_controller.py [-h] [--kafka-servers KAFKA_SERVERS]
+                                      [--input-topic INPUT_TOPIC]
+                                      [--robot-type {mock,ur,kuka}]
+                                      [--robot-ip ROBOT_IP]
+                                      [--min-confidence MIN_CONFIDENCE]
+integrated_robot_controller.py: error: unrecognized arguments: --bootstrap-servers localhost:9092 --command-topic robot-commands

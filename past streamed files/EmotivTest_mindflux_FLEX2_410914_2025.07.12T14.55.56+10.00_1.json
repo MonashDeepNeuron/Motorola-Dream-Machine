@@ -1,0 +1,49 @@
+{
+    "Markers": [
+        {
+            "deleted": false,
+            "endDatetime": "2025-07-12T14:56:15.102775+10:00",
+            "extras": {
+            },
+            "index": 1,
+            "label": "Eyes Opened",
+            "originalEndDatetime": "2025-07-12T14:56:15.104566+10:00",
+            "originalStartDatetime": "2025-07-12T14:56:00.135511+10:00",
+            "port": "Baseline EmotivPRO",
+            "startDatetime": "2025-07-12T14:56:00.135877+10:00",
+            "type": "interval",
+            "uuid": "3d8b7932-5aae-4e0c-92a0-7dc51ce4b988",
+            "value": 1
+        },
+        {
+            "deleted": false,
+            "endDatetime": "2025-07-12T14:56:35.104207+10:00",
+            "extras": {
+            },
+            "index": 2,
+            "label": "Eyes Closed",
+            "originalEndDatetime": "2025-07-12T14:56:35.105205+10:00",
+            "originalStartDatetime": "2025-07-12T14:56:20.107261+10:00",
+            "port": "Baseline EmotivPRO",
+            "startDatetime": "2025-07-12T14:56:20.106063+10:00",
+            "type": "interval",
+            "uuid": "dea124f3-a965-49a4-8f85-21cf7c94e588",
+            "value": 3
+        }
+    ],
+    "connectionType": "bluetooth",
+    "exportApp": "com.emotiv.emotivpro",
+    "exportTime": "2025-07-12T14:57:32.531+10:00",
+    "headsetType": "FLEX2",
+    "mappings": {
+        "CMS": "TP9",
+        "DRL": "TP10",
+        "LG": "F7",
+        "LH": "Fp1",
+        "RG": "F8",
+        "RH": "Fp2"
+    },
+    "montageType": "UNKNOWN",
+    "recordId": "2413bbe3-dfe1-4eca-9205-5621b2a0cfcd",
+    "user": "optimised_computing"
+}

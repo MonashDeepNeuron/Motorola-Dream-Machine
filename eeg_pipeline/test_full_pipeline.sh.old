@@ -1,0 +1,273 @@
+#!/bin/bash
+
+# Full Integration Test: EEG File → Band Power → Simple Robot
+# No AI model required - uses basic band power rules
+
+set -e
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo -e "${BLUE}╔════════════════════════════════════════════════════════╗${NC}"
+echo -e "${BLUE}║        Full EEG → Robot Pipeline Test                 ║${NC}"
+echo -e "${BLUE}║   (No AI Model - Uses Band Power Rules)               ║${NC}"
+echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# PIDs for cleanup
+PRODUCER_PID=""
+CONSUMER_PID=""
+CONTROLLER_PID=""
+ROBOT_PID=""
+
+# Cleanup function
+cleanup() {
+    echo -e "\n${YELLOW}Cleaning up processes...${NC}"
+    
+    for PID in $ROBOT_PID $CONTROLLER_PID $CONSUMER_PID $PRODUCER_PID; do
+        if [ ! -z "$PID" ]; then
+            kill $PID 2>/dev/null || true
+        fi
+    done
+    
+    echo -e "${GREEN}✅ Cleanup complete${NC}"
+}
+
+trap cleanup EXIT INT TERM
+
+# Check prerequisites
+echo -e "\n${BLUE}[1/7] Checking prerequisites...${NC}"
+
+if ! docker info >/dev/null 2>&1; then
+    echo -e "${RED}❌ Docker not running${NC}"
+    exit 1
+fi
+
+if [ ! -f "venv/bin/activate" ]; then
+    echo -e "${YELLOW}Creating virtual environment...${NC}"
+    python3 -m venv venv
+fi
+
+source venv/bin/activate
+
+# Install dependencies
+echo -e "${BLUE}Installing dependencies...${NC}"
+pip install -q kafka-python pydantic mne numpy scipy 2>&1 | grep -v "already satisfied" || true
+
+echo -e "${GREEN}✅ Prerequisites OK${NC}"
+
+# Start Kafka
+echo -e "\n${BLUE}[2/7] Starting Kafka infrastructure...${NC}"
+cd config
+docker compose down >/dev/null 2>&1 || true
+docker compose up -d
+cd ..
+
+echo -e "${YELLOW}Waiting for Kafka to be ready...${NC}"
+sleep 10
+
+# Check if Kafka is responding
+if ! docker exec kafka kafka-broker-api-versions --bootstrap-server localhost:9092 >/dev/null 2>&1; then
+    echo -e "${RED}❌ Kafka not responding${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ Kafka started${NC}"
+
+# Create topics
+echo -e "\n${BLUE}[3/7] Creating Kafka topics...${NC}"
+
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 \
+    --create --if-not-exists --topic raw-eeg \
+    --partitions 1 --replication-factor 1 >/dev/null 2>&1
+
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 \
+    --create --if-not-exists --topic band-power \
+    --partitions 1 --replication-factor 1 >/dev/null 2>&1
+
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 \
+    --create --if-not-exists --topic robot-commands \
+    --partitions 1 --replication-factor 1 >/dev/null 2>&1
+
+echo -e "${GREEN}✅ Topics created: raw-eeg, band-power, robot-commands${NC}"
+
+# Find EEG data file
+echo -e "\n${BLUE}[4/7] Locating EEG data...${NC}"
+
+if [ -f "../past streamed files/EmotivTest_mindflux_FLEX2_410914_2025.07.12T14.55.56+10.00.edf" ]; then
+    EDF_FILE="../past streamed files/EmotivTest_mindflux_FLEX2_410914_2025.07.12T14.55.56+10.00.edf"
+    echo -e "${GREEN}✅ Using Emotiv FLEX2 data (32 channels, 256 Hz)${NC}"
+elif [ -f "S012R14.edf" ]; then
+    EDF_FILE="S012R14.edf"
+    echo -e "${GREEN}✅ Using S012R14.edf (64 channels)${NC}"
+else
+    echo -e "${RED}❌ No EEG data files found${NC}"
+    exit 1
+fi
+
+# Create logs directory
+mkdir -p logs
+
+# Start the pipeline components
+echo -e "\n${BLUE}[5/7] Starting pipeline components...${NC}"
+
+# Component 1: Band Power Consumer (raw-eeg → band-power)
+echo -e "  ${YELLOW}Starting band power analyzer...${NC}"
+python consumer/consumer.py \
+    --bootstrap-servers localhost:9092 \
+    --topic raw-eeg \
+    --write-json \
+    > logs/band_power.log 2>&1 &
+
+CONSUMER_PID=$!
+sleep 2
+
+if ! kill -0 $CONSUMER_PID 2>/dev/null; then
+    echo -e "${RED}  ❌ Band power analyzer failed${NC}"
+    cat logs/band_power.log
+    exit 1
+fi
+
+echo -e "  ${GREEN}✅ Band power analyzer (PID: $CONSUMER_PID)${NC}"
+
+# Component 2: Simple Robot Controller (band-power → robot-commands)
+echo -e "  ${YELLOW}Starting robot controller...${NC}"
+python simple_robot_controller.py \
+    --bootstrap-servers localhost:9092 \
+    --input-topic band-power \
+    --output-topic robot-commands \
+    --movement-scale 20.0 \
+    > logs/robot_controller.log 2>&1 &
+
+CONTROLLER_PID=$!
+sleep 2
+
+if ! kill -0 $CONTROLLER_PID 2>/dev/null; then
+    echo -e "${RED}  ❌ Robot controller failed${NC}"
+    cat logs/robot_controller.log
+    exit 1
+fi
+
+echo -e "  ${GREEN}✅ Robot controller (PID: $CONTROLLER_PID)${NC}"
+
+# Component 3: Mock Robot Executor (robot-commands → simulated motion)
+echo -e "  ${YELLOW}Starting mock robot...${NC}"
+python integrated_robot_controller.py \
+    --robot-type mock \
+    --kafka-servers localhost:9092 \
+    --input-topic robot-commands \
+    > logs/mock_robot.log 2>&1 &
+
+ROBOT_PID=$!
+sleep 2
+
+if ! kill -0 $ROBOT_PID 2>/dev/null; then
+    echo -e "${RED}  ❌ Mock robot failed${NC}"
+    cat logs/mock_robot.log
+    exit 1
+fi
+
+echo -e "  ${GREEN}✅ Mock robot arm (PID: $ROBOT_PID)${NC}"
+
+# Component 4: EEG Data Producer (file → raw-eeg)
+echo -e "  ${YELLOW}Starting EEG data stream...${NC}"
+python producer/producer.py \
+    --edf-file "$EDF_FILE" \
+    --bootstrap-servers localhost:9092 \
+    --speed 5.0 \
+    > logs/producer.log 2>&1 &
+
+PRODUCER_PID=$!
+sleep 2
+
+if ! kill -0 $PRODUCER_PID 2>/dev/null; then
+    echo -e "${RED}  ❌ EEG producer failed${NC}"
+    cat logs/producer.log
+    exit 1
+fi
+
+echo -e "  ${GREEN}✅ EEG producer (PID: $PRODUCER_PID)${NC}"
+
+# Monitor pipeline
+echo -e "\n${BLUE}[6/7] Pipeline running!${NC}"
+echo ""
+echo -e "${GREEN}Data Flow:${NC}"
+echo "  📡 EEG File (${EDF_FILE##*/})"
+echo "      ↓"
+echo "  📊 Kafka: raw-eeg topic"
+echo "      ↓"
+echo "  🧠 Band Power Analysis (Delta, Theta, Alpha, Beta, Gamma)"
+echo "      ↓"
+echo "  📊 Kafka: band-power topic"
+echo "      ↓"
+echo "  🎮 Simple Robot Controller (Band → Movement)"
+echo "      ↓"
+echo "  📊 Kafka: robot-commands topic"
+echo "      ↓"
+echo "  🤖 Mock Robot Arm (Simulated Execution)"
+echo ""
+echo -e "${YELLOW}Monitor Logs:${NC}"
+echo "  tail -f logs/band_power.log       # Band power analysis"
+echo "  tail -f logs/robot_controller.log # Control decisions"
+echo "  tail -f logs/mock_robot.log       # Robot movements"
+echo "  tail -f logs/producer.log         # EEG streaming"
+echo ""
+echo -e "${BLUE}Running for 30 seconds... (Ctrl+C to stop early)${NC}"
+echo ""
+
+# Show live progress
+for i in {1..30}; do
+    sleep 1
+    
+    # Every 5 seconds, show status
+    if [ $((i % 5)) -eq 0 ]; then
+        BAND_LINES=$(wc -l < logs/band_power.log 2>/dev/null || echo "0")
+        CONTROLLER_LINES=$(wc -l < logs/robot_controller.log 2>/dev/null || echo "0")
+        ROBOT_LINES=$(wc -l < logs/mock_robot.log 2>/dev/null || echo "0")
+        
+        echo -e "${YELLOW}[${i}s]${NC} Band: $BAND_LINES lines | Controller: $CONTROLLER_LINES lines | Robot: $ROBOT_LINES lines"
+    fi
+done
+
+echo ""
+
+# Results
+echo -e "\n${BLUE}[7/7] Test Results${NC}"
+echo ""
+
+# Check if files were generated
+if [ -f "consumed_overall_band_averages.json" ]; then
+    echo -e "${GREEN}✅ Band power analysis completed${NC}"
+    echo ""
+    echo -e "${YELLOW}Average band powers across all channels:${NC}"
+    python3 -m json.tool consumed_overall_band_averages.json 2>/dev/null | head -15
+    echo ""
+fi
+
+# Check logs
+echo -e "${YELLOW}Last robot commands:${NC}"
+tail -n 5 logs/robot_controller.log 2>/dev/null || echo "  (check logs/robot_controller.log)"
+
+echo ""
+echo -e "${YELLOW}Last robot movements:${NC}"
+tail -n 5 logs/mock_robot.log 2>/dev/null || echo "  (check logs/mock_robot.log)"
+
+echo ""
+echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${GREEN}✅ Test Complete!${NC}"
+echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+echo -e "${BLUE}Generated Files:${NC}"
+ls -lh consumed_*.* logs/*.log 2>/dev/null | awk '{print "  " $9 " (" $5 ")"}'
+echo ""
+echo -e "${YELLOW}Next Steps:${NC}"
+echo "  1. Review logs to see band power → movement mapping"
+echo "  2. Train AI model (model/train_eeg_model.py) for intelligent control"
+echo "  3. Replace simple_robot_controller with ai_consumer for ML-based control"
+echo "  4. Connect real robot (UR or KUKA) instead of mock"
+echo ""

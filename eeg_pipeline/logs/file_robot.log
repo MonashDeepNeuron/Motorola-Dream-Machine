@@ -1,0 +1,10 @@
+2025-10-08 11:47:53,171 - INFO - Initializing MOCK robot...
+2025-10-08 11:47:53,171 - ERROR - Error: MockRobot.__init__() missing 1 required positional argument: 'ip'
+Traceback (most recent call last):
+  File "/home/erolc/Projects/Motorola/motorolav2/Motorola-Dream-Machine/eeg_pipeline/file_robot_controller.py", line 206, in main
+    controller = FileRobotController(
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "/home/erolc/Projects/Motorola/motorolav2/Motorola-Dream-Machine/eeg_pipeline/file_robot_controller.py", line 45, in __init__
+    self.robot = MockRobot()
+                 ^^^^^^^^^^^
+TypeError: MockRobot.__init__() missing 1 required positional argument: 'ip'

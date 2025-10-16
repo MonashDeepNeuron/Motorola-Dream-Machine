@@ -1,0 +1,39 @@
+2025-10-08 11:40:24,432 - __main__ - INFO - ============================================================
+2025-10-08 11:40:24,432 - __main__ - INFO - Simple Band Power → Robot Controller
+2025-10-08 11:40:24,432 - __main__ - INFO - ============================================================
+2025-10-08 11:40:24,432 - __main__ - INFO - Input topic: band-power
+2025-10-08 11:40:24,432 - __main__ - INFO - Output topic: robot-commands
+2025-10-08 11:40:24,432 - __main__ - INFO - Movement scale: 20.0 mm/s
+2025-10-08 11:40:24,432 - __main__ - INFO - ============================================================
+2025-10-08 11:40:24,432 - __main__ - INFO - Simple Band Power Controller initialized
+2025-10-08 11:40:24,432 - __main__ - INFO - Movement scale: 20.0 mm/s
+2025-10-08 11:40:24,432 - __main__ - INFO - Connecting to Kafka...
+2025-10-08 11:40:24,433 - kafka.conn - INFO - <BrokerConnection client_id=kafka-python-2.2.14, node_id=bootstrap-0 host=localhost:9092 <connecting> [IPv4 ('127.0.0.1', 9092)]>: connecting to localhost:9092 [('127.0.0.1', 9092) IPv4]
+2025-10-08 11:40:24,436 - kafka.conn - INFO - <BrokerConnection client_id=kafka-python-2.2.14, node_id=bootstrap-0 host=localhost:9092 <checking_api_versions_recv> [IPv4 ('127.0.0.1', 9092)]>: Broker version identified as 2.6
+2025-10-08 11:40:24,436 - kafka.conn - INFO - <BrokerConnection client_id=kafka-python-2.2.14, node_id=bootstrap-0 host=localhost:9092 <connected> [IPv4 ('127.0.0.1', 9092)]>: Connection complete.
+2025-10-08 11:40:24,437 - kafka.consumer.subscription_state - INFO - Updating subscribed topics to: ('band-power',)
+2025-10-08 11:40:24,437 - kafka.conn - INFO - <BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-0 host=localhost:9092 <connecting> [IPv4 ('127.0.0.1', 9092)]>: connecting to localhost:9092 [('127.0.0.1', 9092) IPv4]
+2025-10-08 11:40:24,439 - kafka.conn - INFO - <BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-0 host=localhost:9092 <checking_api_versions_recv> [IPv4 ('127.0.0.1', 9092)]>: Broker version identified as 2.6
+2025-10-08 11:40:24,440 - kafka.conn - INFO - <BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-0 host=localhost:9092 <connected> [IPv4 ('127.0.0.1', 9092)]>: Connection complete.
+2025-10-08 11:40:24,440 - __main__ - INFO - ✅ Connected to Kafka
+2025-10-08 11:40:24,440 - __main__ - INFO - 🎮 Waiting for band power data...
+2025-10-08 11:40:24,440 - __main__ - INFO - 
+2025-10-08 11:40:24,442 - kafka.conn - INFO - <BrokerConnection client_id=kafka-python-2.2.14, node_id=1 host=172.17.0.1:9092 <connecting> [IPv4 ('172.17.0.1', 9092)]>: connecting to 172.17.0.1:9092 [('172.17.0.1', 9092) IPv4]
+2025-10-08 11:40:24,442 - kafka.conn - INFO - <BrokerConnection client_id=kafka-python-2.2.14, node_id=1 host=172.17.0.1:9092 <connected> [IPv4 ('172.17.0.1', 9092)]>: Connection complete.
+2025-10-08 11:40:24,442 - kafka.conn - INFO - <BrokerConnection client_id=kafka-python-2.2.14, node_id=bootstrap-0 host=localhost:9092 <connected> [IPv4 ('127.0.0.1', 9092)]>: Closing connection. 
+2025-10-08 11:40:24,552 - kafka.cluster - INFO - Coordinator for group/simple-robot-controller is BrokerMetadata(nodeId='coordinator-1', host='172.17.0.1', port=9092, rack=None)
+2025-10-08 11:40:24,552 - kafka.coordinator - INFO - Discovered coordinator coordinator-1 for group simple-robot-controller
+2025-10-08 11:40:24,552 - kafka.coordinator.heartbeat - INFO - Starting new heartbeat thread
+2025-10-08 11:40:24,552 - kafka.coordinator.consumer - INFO - Revoking previously assigned partitions set() for group simple-robot-controller
+2025-10-08 11:40:24,552 - kafka.coordinator - INFO - Failed to join group simple-robot-controller: NodeNotReadyError: coordinator-1
+2025-10-08 11:40:24,553 - kafka.conn - INFO - <BrokerConnection client_id=kafka-python-2.2.14, node_id=coordinator-1 host=172.17.0.1:9092 <connecting> [IPv4 ('172.17.0.1', 9092)]>: connecting to 172.17.0.1:9092 [('172.17.0.1', 9092) IPv4]
+2025-10-08 11:40:24,553 - kafka.conn - INFO - <BrokerConnection client_id=kafka-python-2.2.14, node_id=coordinator-1 host=172.17.0.1:9092 <connected> [IPv4 ('172.17.0.1', 9092)]>: Connection complete.
+2025-10-08 11:40:24,653 - kafka.coordinator - INFO - (Re-)joining group simple-robot-controller
+2025-10-08 11:40:24,658 - kafka.coordinator - INFO - Received member id kafka-python-2.2.14-9972ff31-6a93-4dbf-9dca-2101cad14348 for group simple-robot-controller; will retry join-group
+2025-10-08 11:40:24,658 - kafka.coordinator - INFO - Failed to join group simple-robot-controller: [Error 79] MemberIdRequiredError
+2025-10-08 11:40:24,658 - kafka.coordinator - INFO - (Re-)joining group simple-robot-controller
+2025-10-08 11:40:27,665 - kafka.coordinator - INFO - Successfully joined group simple-robot-controller <Generation 1 (member_id: kafka-python-2.2.14-9972ff31-6a93-4dbf-9dca-2101cad14348, protocol: range)>
+2025-10-08 11:40:27,665 - kafka.coordinator - INFO - Elected group leader -- performing partition assignments using range
+2025-10-08 11:40:27,671 - kafka.consumer.subscription_state - INFO - Updated partition assignment: [TopicPartition(topic='band-power', partition=0)]
+2025-10-08 11:40:27,671 - kafka.coordinator.consumer - INFO - Setting newly assigned partitions {TopicPartition(topic='band-power', partition=0)} for group simple-robot-controller
+2025-10-08 11:40:27,675 - kafka.consumer.fetcher - INFO - Resetting offset for partition TopicPartition(topic='band-power', partition=0) to offset 0.
